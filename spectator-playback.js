@@ -1,14 +1,14 @@
-import {mountSpectatorStatus} from './spectator-view.js?v=53.8.21';
-import {BUILD_ID,validateSettings} from './room-settings.js?v=53.8.21';
-import {DEFAULT_EEPROM} from './nvram.js?v=53.8.21';
-import {linkIdForSeat} from './central-link.js?v=53.8.21';
-import {createRenderer} from './renderer.js?v=53.8.21';
-import {transformPacket} from './spectator-codec.js?v=53.8.21';
-import {SPECTATOR_VERSION,SpectatorWorldBuffer,worldState} from './spectator-world.js?v=53.8.21';
-import {ARCADE_STEP_MS} from './simulation-clock.js?v=53.8.21';
-import {mountSpectatorHUD} from './spectator-hud.js?v=53.8.21';
-import {createEnvironment,environmentSnapshot} from './environment.js?v=53.8.21';
-import {createSpectatorAudio} from './spectator-audio.js?v=53.8.21';
+import {mountSpectatorStatus} from './spectator-view.js?v=53.8.24';
+import {BUILD_ID,validateSettings} from './room-settings.js?v=53.8.24';
+import {DEFAULT_EEPROM} from './nvram.js?v=53.8.24';
+import {linkIdForSeat} from './central-link.js?v=53.8.24';
+import {createRenderer} from './renderer.js?v=53.8.24';
+import {transformPacket} from './spectator-codec.js?v=53.8.24';
+import {SPECTATOR_VERSION,SpectatorWorldBuffer,worldState} from './spectator-world.js?v=53.8.24';
+import {ARCADE_STEP_MS} from './simulation-clock.js?v=53.8.24';
+import {mountSpectatorHUD} from './spectator-hud.js?v=53.8.24';
+import {createEnvironment,environmentSnapshot} from './environment.js?v=53.8.24';
+import {createSpectatorAudio} from './spectator-audio.js?v=53.8.24';
 
 export function createSpectatorPlayback({room,getROM,getVolume=()=>1,root,onStatus=()=>{}}){
  const $=id=>root.querySelector('#'+id),hud=mountSpectatorHUD(root);

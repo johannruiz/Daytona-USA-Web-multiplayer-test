@@ -1,4 +1,4 @@
-import {BUILD_ID,parseInvitation} from './room-settings.js?v=53.8.21';
+import {BUILD_ID,parseInvitation} from './room-settings.js?v=53.8.24';
 export const ROOM_TTL_MS=90000,ROOM_PULSE_MS=30000;
 export const DIRECTORY_IDLE_MS=5*60*1000;
 const states=new Set(['open','full','starting','racing','reconnecting']);
@@ -62,6 +62,7 @@ export class PublicRoomDirectory {
  }
  async clearRoom(id){
   if(!this.backend)return;
+  try{this.backend.withdraw?.(id);}catch{} // Optional Discord service never gates room cleanup.
   try{await this.backend.remove(id);await this.backend.cancel(id);}catch{} // onDisconnect + TTL remain the fallback.
  }
  async flush(){
@@ -74,9 +75,10 @@ export class PublicRoomDirectory {
    await timeout(this.backend.put(id,payload));
    if(generation!==this.generation){void this.clearRoom(id);return;}
    this.lastKey=key;this.lastAt=now;this.hostStatus='published';this.error='';
+   try{this.backend.published?.(id);}catch{} // The backend deduplicates; pulses add no notification traffic.
   }catch(e){if(generation===this.generation){this.retryAt=this.now()+ROOM_PULSE_MS;this.hostStatus='error';this.error=directoryError(e);}}
   finally{this.writing=false;this.emit();if(generation!==this.generation)void this.flush();}
  }
  retry(){this.paused=false;this.lastInteraction=this.now();this.error='';this.retryAt=0;this.lastAttempt=-Infinity;this.unlisten?.();this.unlisten=null;this.activity();}
- dispose(){this.desired=null;this.browsing=false;this.activity();this.unconnection?.();this.unoffset?.();}
+ dispose(){const id=this.hostId;this.hostId='';this.generation++;this.desired=null;this.browsing=false;if(id)void this.clearRoom(id);this.activity();this.unconnection?.();this.unoffset?.();}
 }

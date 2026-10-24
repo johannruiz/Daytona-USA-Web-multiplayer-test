@@ -1,11 +1,11 @@
 // This isolated engine reads only the ROM supplied by this browser. No uploads.
-import factory from './skin-preview-engine.js?v=53.8.21';
-import {DEFAULT_EEPROM} from './nvram.js?v=53.8.21';
+import factory from './skin-preview-engine.js?v=53.8.24';
+import {DEFAULT_EEPROM} from './nvram.js?v=53.8.24';
 let engine,initializing;
 const yieldTask=()=>new Promise(resolve=>setTimeout(resolve,0));
 async function initialize(file){
  if(!(file instanceof Blob))throw Error('Choose a valid ROM first.');
- engine=await factory({locateFile:path=>new URL(path+'?v=53.8.21',import.meta.url).href,print:()=>{},printErr:()=>{}});
+ engine=await factory({locateFile:path=>new URL(path+'?v=53.8.24',import.meta.url).href,print:()=>{},printErr:()=>{}});
  engine.FS.mkdir('/roms');engine.FS.writeFile('/roms/preview.zip',new Uint8Array(await file.arrayBuffer()));
  const reload=()=>{if(!engine.ccall('daytona_load','number',['string','number'],['/roms/preview.zip',0]))throw Error('The preview engine could not read this ROM.');};
  reload();

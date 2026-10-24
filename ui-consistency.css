@@ -29,7 +29,7 @@
 #menuDialog .ui-button.ui-danger:hover:enabled{background:#fff0e9;border-color:#cf9f96}
 #menuDialog .ui-button:disabled{background:#e9e9e3;border-color:#d1d1c8;color:#89897e;box-shadow:none;filter:none;opacity:1;transform:none}
 #menuDialog .ui-button:disabled>span[aria-hidden]{color:inherit}
-#menuDialog #startRoom[aria-busy=true]:disabled{background:linear-gradient(#fff35b,#ffe12e);border-color:#b59a20;color:#171717;box-shadow:0 2px 0 #aa861a;justify-content:center}
+#menuDialog #startRoom[aria-busy=true]:disabled{justify-content:center}
 #menuDialog .ui-button.ui-icon-button{width:44px;height:44px;padding:0;font-size:25px;line-height:1}
 /* Linked play already has Return to game in the footer. Keep its header free. */
 #menuDialog.mp-view #closeBtn{display:none}

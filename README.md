@@ -1,3 +1,38 @@
+# Daytona USA Web — 53.8.24: G29 macOS support and room/chat improvements
+
+Release 53.8.24 integrates [gareth10203's PR #3](https://github.com/johannruiz/Daytona-USA-Web-multiplayer-test/pull/3).
+The Logitech G29 force-feedback provider preserves seven-byte native commands and
+pads them to the wheel's advertised output-report size, including the 16-byte
+descriptor reported on Chrome/macOS. Device selection retains the correct wheel
+collection filters. The original contributor commit is retained in the merge
+history; see [CONTRIBUTORS.md](CONTRIBUTORS.md).
+
+This publication also includes the previously packaged 53.8.22 and 53.8.23 changes:
+
+- Public rooms are announced in Discord through the separately deployed,
+  authenticated Worker. The same announcement is closed when the room disappears;
+  player counts are omitted. Webhook and service-account credentials stay on the
+  server and are absent from this repository update.
+- PREPARING CABINET uses the disabled appearance from single player for both
+  hosts and guests.
+- Lobby, in-game and spectator chats follow new messages until the reader scrolls
+  upward. Reading position survives panel changes and bounded-history trimming;
+  the new-message button and sending a message return to the latest line.
+- Notification sounds are approximately 8 dB louder while retaining Interface
+  volume, mute, distinct motifs and existing notification cadence.
+
+Validation: **417 automated tests passed** in the integration workspace, plus
+Chrome checks of the three chats, mobile lobby tabs, preparation-button styling
+and rendered notification audio. **71 repository tests also pass**, including focused
+G29 lifecycle, pairing, provider and diagnostics regression tests. Physical G29
+confirmation on macOS is still pending; this is descriptor-based support.
+The four main/preview engine JS/WASM files are unchanged from 53.8.23. The runtime
+at the repository root matches `MANIFEST.sha256`. Reload to load the new version.
+
+---
+
+## Previous release notes
+
 # Daytona USA Web — 53.8.21: protected TURN connectivity
 
 Release 53.8.21 adds authenticated Cloudflare TURN fallback for networks that

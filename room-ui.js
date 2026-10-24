@@ -1,13 +1,14 @@
-import {mountRoomInvitation} from './room-invitation.js?v=53.8.21';
-import {mountWaitingToast} from './waiting-room.js?v=53.8.21';
-import {PublicRoomDirectory} from './public-rooms.js?v=53.8.21';
-import {createFirebaseDirectoryBackend} from './firebase-client.js?v=53.8.21';
-import {mountPublicRoomBrowser} from './public-rooms-ui.js?v=53.8.21';
-import {carColor} from './car-colors.js?v=53.8.21';
-import {parseInvitation,invitation} from './room-settings.js?v=53.8.21';
-import {createLobbyNotifications} from './lobby-notifications.js?v=53.8.21';
-import {mountPlayerSkins} from './player-skins-ui.js?v=53.8.21';
-import {PLAYER_SKINS} from './player-skins.js?v=53.8.21';
+import {mountRoomInvitation} from './room-invitation.js?v=53.8.24';
+import {mountWaitingToast} from './waiting-room.js?v=53.8.24';
+import {PublicRoomDirectory} from './public-rooms.js?v=53.8.24';
+import {createFirebaseDirectoryBackend} from './firebase-client.js?v=53.8.24';
+import {mountPublicRoomBrowser} from './public-rooms-ui.js?v=53.8.24';
+import {carColor} from './car-colors.js?v=53.8.24';
+import {parseInvitation,invitation} from './room-settings.js?v=53.8.24';
+import {createLobbyNotifications} from './lobby-notifications.js?v=53.8.24';
+import {mountPlayerSkins} from './player-skins-ui.js?v=53.8.24';
+import {PLAYER_SKINS} from './player-skins.js?v=53.8.24';
+import {createChatFollow} from './chat-follow.js?v=53.8.24';
 const $=id=>document.getElementById(id);
 export function invitationFromURL(href){return new URLSearchParams(new URL(href).hash.slice(1)).get('room')||'';}
 export function createRoomUI(room,{single,unlockAudio,previews,canResume=()=>false,enableArrivalNotifications=()=>{},notifyRequest=()=>{},notifyChat=()=>{},notifyReady=()=>{},notifyConfirmed=()=>{}}){
@@ -89,25 +90,29 @@ export function createRoomUI(room,{single,unlockAudio,previews,canResume=()=>fal
  const change=()=>room.setSettings({mode:Number($('roomMode').value),difficulty:Number($('roomDifficulty').value),cpuCars:$('roomCpuCars').value==='true',reverse:$('roomDirection').value==='reverse',playerCollisions:$('roomPlayerCollisions').value==='true',pitStops:$('roomPitStops').value==='true',cpuLiveries:$('roomCpuLiveries').value,environment:$('roomEnvironment').value,region:'Export'});
  $('roomMode').onchange=change;$('roomDifficulty').onchange=change;$('roomCpuCars').onchange=change;$('roomDirection').onchange=change;$('roomPlayerCollisions').onchange=change;$('roomPitStops').onchange=change;$('roomCpuLiveries').onchange=change;$('roomEnvironment').onchange=change;
  function markRead(){unread=0;for(const id of ['chatUnread','mobileChatUnread'])$(id).hidden=true;$('newChatMessages').hidden=true;}
- function scrollChat(){const log=$('chatLog');log.scrollTop=log.scrollHeight;markRead();}
-  function mobileTab(tab){panel.dataset.mobileTab=tab;for(const [id,name] of [['roomGridTab','grid'],['roomChatTab','chat']]){$(id).setAttribute('aria-selected',String(tab===name));$(id).tabIndex=tab===name?0:-1;}if(tab==='chat')scrollChat();}
+ const chatFollow=createChatFollow($('chatLog'),{onBottom:()=>{if(!document.hidden&&$('chatLog').getClientRects().length)markRead();}});
+ function scrollChat(){chatFollow.latest();markRead();}
+  function mobileTab(tab){panel.dataset.mobileTab=tab;for(const [id,name] of [['roomGridTab','grid'],['roomChatTab','chat']]){$(id).setAttribute('aria-selected',String(tab===name));$(id).tabIndex=tab===name?0:-1;}if(tab==='chat')chatFollow.refresh();}
  $('roomGridTab').onclick=()=>mobileTab('grid');$('roomChatTab').onclick=()=>mobileTab('chat');
  for(const id of ['roomGridTab','roomChatTab'])$(id).addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const chat=e.key==='End'||(e.key!=='Home'&&id==='roomGridTab');mobileTab(chat?'chat':'grid');$(chat?'roomChatTab':'roomGridTab').focus();}});
  $('newChatMessages').onclick=scrollChat;
  $('newChatMessages').addEventListener('pointerdown',event=>{if(event.button===0)event.preventDefault();});
- $('chatLog').addEventListener('scroll',()=>{const log=$('chatLog');if(log.scrollTop+log.clientHeight>=log.scrollHeight-20)markRead();});
+ $('chatLog').addEventListener('scroll',()=>{const log=$('chatLog');if(!document.hidden&&log.clientHeight>0&&log.getClientRects().length&&log.scrollTop+log.clientHeight>=log.scrollHeight-20)markRead();});
  $('chatInput').addEventListener('input',()=>{$('chatLength').textContent=`${$('chatInput').value.length}/240`;$('chatSend').disabled=!room.chatAllowed(room.id)||!$('chatInput').value.trim();});
  $('chatInput').addEventListener('pointerdown',()=>{void unlockAudio();});
  $('chatForm').addEventListener('submit',e=>{e.preventDefault();void unlockAudio();try{if(room.submitChat($('chatInput').value)){$('chatInput').value='';$('chatLength').textContent='0/240';$('chatSend').disabled=true;$('chatFeedback').textContent=room.isHost?'Message sent.':'Sending…';scrollChat();$('chatInput').focus();}}catch(err){$('chatFeedback').textContent=err.message;}});
  function renderChat(state){
-  const log=$('chatLog'),visible=log.getClientRects().length>0,nearBottom=log.scrollTop+log.clientHeight>=log.scrollHeight-24,chat=state.chat||[];
+  const log=$('chatLog'),visible=log.getClientRects().length>0,nearBottom=chatFollow.following,chat=state.chat||[];
+  const anchor=visible&&!nearBottom?[...messages.values()].find(node=>node.getBoundingClientRect().bottom>log.getBoundingClientRect().top):null,anchorTop=anchor?.getBoundingClientRect().top;
   const wanted=new Set(chat.map(m=>m.seq));for(const [seq,node] of messages)if(!wanted.has(seq)){node.remove();messages.delete(seq);}
   let added=0,own=false;
   for(const m of chat){if(messages.has(m.seq))continue;const li=document.createElement('li'),header=document.createElement('div'),name=document.createElement('strong'),time=document.createElement('time'),text=document.createElement('p');
    li.className=`chat-message${m.sender===state.id?' own-message':''}`;name.textContent=m.sender===state.id?'You':m.name;time.dateTime=new Date(m.time).toISOString();time.textContent=new Date(m.time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});header.append(name,time);text.textContent=m.text;li.append(header,text);log.append(li);messages.set(m.seq,li);if(m.seq>lastChatSeq){added++;own||=m.sender===state.id;}lastChatSeq=Math.max(lastChatSeq,m.seq);
   }
   $('chatEmpty').hidden=chat.length>0;
-  if(added){if(visible&&(nearBottom||own))scrollChat();else {unread+=added;for(const id of ['chatUnread','mobileChatUnread']){$(id).hidden=false;$(id).textContent=String(unread);}$('newChatMessages').hidden=!visible;}}
+  if(added){if(own)scrollChat();else {unread+=added;if(nearBottom)chatFollow.refresh();for(const id of ['chatUnread','mobileChatUnread']){$(id).hidden=false;$(id).textContent=String(unread);}}}
+  if(!own&&anchor&&log.contains(anchor))log.scrollTop+=anchor.getBoundingClientRect().top-anchorTop;
+  $('newChatMessages').hidden=!unread||chatFollow.following;
   const admitted=state.members.some(m=>m.id===state.id)||state.waitingForRace,enabled=!!state.chatAvailable&&admitted;
   $('chatInput').disabled=!enabled;$('chatSend').disabled=!enabled||!$('chatInput').value.trim();
   if(!enabled)$('chatFeedback').textContent=state.phase==='reconnecting'?'Reconnecting. Your chat will be restored.':admitted?'Chat returns in attract mode.':'Chat opens after the host admits you.';
@@ -177,7 +182,7 @@ export function createRoomUI(room,{single,unlockAudio,previews,canResume=()=>fal
    toast.sync(state);directory.updateHost(state);if(state.phase!=='idle')directory.setBrowsing(false);
    notifications.update(state);
    $('networkStatus').hidden=state.phase!=='playing';$('arcadeLinkStatus').hidden=state.phase!=='playing';
-   const key=state.host||state.id||'idle';if(key!==roomKey){invitationMenu.close();roomKey=key;pendingStamp='';lastChatSeq=0;lastAckCommand=0;lastSeatAck=0;previousSeat=null;focusSeatReady=false;swapStamp='';$('seatStatus').textContent='';messages.clear();$('chatLog').replaceChildren();cards.clear();emptySeats.clear();$('playersList').replaceChildren();$('chatInput').value='';$('chatLength').textContent='0/240';markRead();mobileTab('grid');}
+   const key=state.host||state.id||'idle';if(key!==roomKey){invitationMenu.close();roomKey=key;pendingStamp='';lastChatSeq=0;lastAckCommand=0;lastSeatAck=0;previousSeat=null;focusSeatReady=false;swapStamp='';$('seatStatus').textContent='';messages.clear();$('chatLog').replaceChildren();chatFollow.reset();cards.clear();emptySeats.clear();$('playersList').replaceChildren();$('chatInput').value='';$('chatLength').textContent='0/240';markRead();mobileTab('grid');}
    if(state.phase==='idle'){invitationMenu.setAvailable(false);return;}
    if(invitePhase!==state.phase){invitationMenu.close();invitePhase=state.phase;}
    layout(true);panel.classList.toggle('guest-room',!state.isHost);panel.classList.toggle('has-requests',state.isHost&&state.pending.length>0);panel.dataset.phase=state.phase;

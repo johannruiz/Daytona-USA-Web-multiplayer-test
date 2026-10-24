@@ -1,5 +1,6 @@
 // Original FM plucks: a bright attack, warm body and a short musical tail.
-// All voices use the game's existing volume and audio context.
+// Notification level is independent of game audio; Interface volume still applies.
+export const NOTIFICATION_GAIN=2.5;
 export function createLobbySound({context,output,muted=()=>false,clock=()=>performance.now()}) {
   let last=-Infinity,lastKind='';
   const patterns={
@@ -27,8 +28,8 @@ export function createLobbySound({context,output,muted=()=>false,clock=()=>perfo
       depth.gain.exponentialRampToValueAtTime(frequency*.015,at+.055);
       bodyGain.gain.setValueAtTime(.23,at);
       gain.gain.setValueAtTime(.0001,at);
-      gain.gain.exponentialRampToValueAtTime(pattern.level,at+.006);
-      gain.gain.exponentialRampToValueAtTime(pattern.level*.28,at+duration*.35);
+      gain.gain.exponentialRampToValueAtTime(pattern.level*NOTIFICATION_GAIN,at+.006);
+      gain.gain.exponentialRampToValueAtTime(pattern.level*NOTIFICATION_GAIN*.28,at+duration*.35);
       gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
       mod.connect(depth);depth.connect(tone.frequency);tone.connect(gain);
       body.connect(bodyGain);bodyGain.connect(gain);gain.connect(target);

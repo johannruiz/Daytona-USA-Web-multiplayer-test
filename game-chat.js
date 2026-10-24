@@ -1,21 +1,23 @@
+import {createChatFollow} from './chat-follow.js?v=53.8.24';
 // Shared bounded room history. DOM updates follow real changes, not heartbeats.
 export function mountGameChat(root,{room,storage,gameShown=()=>false,notify=()=>{},onTyping=()=>{},onRead=()=>{},returnFocus=()=>{}}){
  const find=id=>root.querySelector('#'+id),panel=find('gameChatPanel'),toggle=find('gameChatToggle'),badge=find('gameChatUnread'),log=find('gameChatLog'),input=find('gameChatInput'),send=find('gameChatSend'),feedback=find('gameChatFeedback'),newer=find('gameChatNew'),empty=find('gameChatEmpty');
  let collapsed=false;try{collapsed=storage?.getItem('daytona-game-chat-collapsed-v1')==='1';}catch{}
  let key='',baseline=false,lastSeq=0,unread=0,shown=false,lastAck=0,lastRead=0,lastUpdate=-Infinity,displayKey='',historyKey='',unreadKey='';const nodes=new Map();
  const bottom=()=>log.scrollTop+log.clientHeight>=log.scrollHeight-24;
+ const follow=createChatFollow(log,{onBottom:()=>{if(shown&&!collapsed&&!document.hidden)read();}});
  const typing=()=>document.activeElement===input;
  function read(){if(unread){unread=0;paintUnread();}if(lastSeq>lastRead){lastRead=lastSeq;onRead();}}
  function paintUnread(){
-  const stamp=`${unread}:${collapsed}`;if(stamp===unreadKey)return;unreadKey=stamp;
+  const stamp=`${unread}:${collapsed}:${follow.following}`;if(stamp===unreadKey)return;unreadKey=stamp;
   badge.hidden=!unread;badge.textContent=unread>99?'99+':String(unread);
   toggle.setAttribute('aria-label',`Show room chat${unread?`, ${unread} unread messages`:''}`);
-  newer.hidden=!unread||collapsed;newer.textContent=unread?`${unread} new message${unread===1?'':'s'} ↓`:'New messages ↓';
+  newer.hidden=!unread||collapsed||follow.following;newer.textContent=unread?`${unread} new message${unread===1?'':'s'} ↓`:'New messages ↓';
  }
- function latest(){log.scrollTop=log.scrollHeight;read();}
+ function latest(){follow.latest();read();}
  function collapse(value,focus=true){
   collapsed=value;try{storage?.setItem('daytona-game-chat-collapsed-v1',value?'1':'0');}catch{}
-  update(true);paintUnread();if(focus){if(value)returnFocus();else input.focus({preventScroll:true});}if(!value)latest();
+  update(true);paintUnread();if(focus){if(value)returnFocus();else input.focus({preventScroll:true});}if(!value)follow.refresh();
  }
  // Pointer users open the history without summoning the mobile keyboard.
  toggle.onclick=event=>collapse(false,event.detail===0);find('gameChatHide').onclick=()=>collapse(true);newer.onclick=latest;
@@ -31,7 +33,7 @@ export function mountGameChat(root,{room,storage,gameShown=()=>false,notify=()=>
  function update(force=false){
   const now=performance.now();if(!force&&now-lastUpdate<100)return;lastUpdate=now;
   const available=room.active&&room.chatAllowed(room.id),next=available&&gameShown();
-  if(shown!==next){shown=next;root.hidden=!next;if(!next&&root.contains(document.activeElement)){document.activeElement.blur();if(gameShown())returnFocus();}}
+  if(shown!==next){shown=next;root.hidden=!next;if(next&&!collapsed)follow.refresh();if(!next&&root.contains(document.activeElement)){document.activeElement.blur();if(gameShown())returnFocus();}}
   const stamp=`${next}:${collapsed}:${available}`;
   if(stamp!==displayKey){displayKey=stamp;root.classList.toggle('chat-collapsed',collapsed);panel.hidden=!next||collapsed;toggle.hidden=!next||!collapsed;toggle.setAttribute('aria-expanded',String(!collapsed));input.disabled=!available;send.disabled=!available||!input.value.trim();}
   if(next&&!collapsed&&!document.hidden&&bottom())read();
@@ -39,10 +41,10 @@ export function mountGameChat(root,{room,storage,gameShown=()=>false,notify=()=>
  }
  function sync(state){
   const nextKey=(state.host||'')+':'+state.id;
-  if(key!==nextKey){key=nextKey;displayKey='';historyKey='';unreadKey='';baseline=false;lastSeq=0;lastAck=0;lastRead=0;unread=0;nodes.clear();log.replaceChildren();input.value='';feedback.textContent='Chat pauses during the race.';paintUnread();}
+  if(key!==nextKey){key=nextKey;displayKey='';historyKey='';unreadKey='';baseline=false;lastSeq=0;lastAck=0;lastRead=0;unread=0;nodes.clear();log.replaceChildren();follow.reset();input.value='';feedback.textContent='Chat pauses during the race.';paintUnread();}
   const chat=state.chat||[],stamp=`${chat.length}:${chat[0]?.seq||0}:${chat.at(-1)?.seq||0}`;
   if(stamp!==historyKey){
-   historyKey=stamp;const visible=shown&&!collapsed,nearBottom=visible&&bottom(),wanted=new Set(chat.map(m=>m.seq));
+   historyKey=stamp;const visible=shown&&!collapsed,nearBottom=follow.following,wanted=new Set(chat.map(m=>m.seq));
    const logTop=visible&&!nearBottom?log.getBoundingClientRect().top:0;
    const anchor=visible&&!nearBottom?[...nodes.values()].find(node=>node.getBoundingClientRect().bottom>logTop):null;
    const anchorTop=anchor?.getBoundingClientRect().top;let added=0,own=false;
@@ -55,7 +57,7 @@ export function mountGameChat(root,{room,storage,gameShown=()=>false,notify=()=>
    }
    lastSeq=Math.max(lastSeq,...chat.map(m=>m.seq),0);unread+=added;empty.hidden=chat.length>0;
    if(added&&room.active&&room.chatAllowed(room.id)&&!document.hidden)notify();
-   if(visible&&(nearBottom||own))latest();
+   if(own)latest();else if(nearBottom)follow.refresh();
    else if(anchor&&log.contains(anchor))log.scrollTop+=anchor.getBoundingClientRect().top-anchorTop;
   }
   baseline=state.members.some(m=>m.id===state.id)||!!state.waitingForRace;

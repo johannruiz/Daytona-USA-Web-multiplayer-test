@@ -1,7 +1,7 @@
-import {arrivalRoomKey} from './room-arrivals.js?v=53.8.21';
+import {arrivalRoomKey} from './room-arrivals.js?v=53.8.24';
 const active=s=>s?.isHost&&['lobby','preparing','playing'].includes(s.phase);
 export function createRoomSystemAlerts({NotificationAPI=globalThis.Notification,serviceWorkers=globalThis.navigator?.serviceWorker,secure=globalThis.isSecureContext,
- onClick=()=>{},focusWindow=()=>globalThis.focus(),token=()=>globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2),workerURL=new URL('./room-alerts-sw.js?v=53.8.21',import.meta.url),
+ onClick=()=>{},focusWindow=()=>globalThis.focus(),token=()=>globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2),workerURL=new URL('./room-alerts-sw.js?v=53.8.24',import.meta.url),
  schedule=setTimeout,cancel=clearTimeout}={}){
  let state=null,key='',stamp='',live=false,asked=false,registration=null,workerPromise=null;const notices=new Set();
  const allowed=()=>secure&&NotificationAPI?.permission==='granted';

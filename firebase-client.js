@@ -1,5 +1,6 @@
 // Public web configuration. Database ownership is enforced by server rules.
-import {createAppCheckGate} from './firebase-security.js?v=53.8.21';
+import {createAppCheckGate} from './firebase-security.js?v=53.8.24';
+import {createRoomAnnouncements} from './room-announcements.js?v=53.8.24';
 export const FIREBASE_CONFIG={
  apiKey:'AIzaSyDdISDv02wMhfd17CDVI8FQkk_mWBHlpms',
  authDomain:'daytona-usa-web.firebaseapp.com',
@@ -33,6 +34,7 @@ export async function getConnectionTokens(){
 export async function createFirebaseDirectoryBackend(){
  const [{instance,auth},dbSDK]=await Promise.all([identity(),import(CDN+'firebase-database.js')]);
  const db=dbSDK.getDatabase(instance),room=id=>dbSDK.ref(db,'publicRooms/'+id);
+ const announcements=createRoomAnnouncements({tokens:getConnectionTokens});
  return {
   uid:auth.currentUser.uid,timestamp:()=>dbSDK.serverTimestamp(),
   online:()=>{ensureAppCheck.setActive(true);dbSDK.goOnline(db);},offline:()=>{dbSDK.goOffline(db);ensureAppCheck.setActive(false);},
@@ -41,7 +43,8 @@ export async function createFirebaseDirectoryBackend(){
   listen:(next,error)=>dbSDK.onValue(dbSDK.query(dbSDK.ref(db,'publicRooms'),dbSDK.orderByChild('updatedAt'),dbSDK.limitToLast(50)),s=>next(s.val()||{}),error),
   arm:id=>dbSDK.onDisconnect(room(id)).remove(),
   put:(id,value)=>dbSDK.set(room(id),value),
-  remove:id=>dbSDK.remove(room(id)),cancel:id=>dbSDK.onDisconnect(room(id)).cancel()
+  remove:id=>dbSDK.remove(room(id)),cancel:id=>dbSDK.onDisconnect(room(id)).cancel(),
+  published:id=>announcements.published(id),withdraw:id=>announcements.withdraw(id)
  };
 }
 

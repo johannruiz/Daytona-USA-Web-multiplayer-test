@@ -1,5 +1,5 @@
-import {linkIdForSeat} from './central-link.js?v=53.8.21';
-import {NATIVE_HZ} from './link-timing.js?v=53.8.21';
+import {linkIdForSeat} from './central-link.js?v=53.8.24';
+import {NATIVE_HZ} from './link-timing.js?v=53.8.24';
 
 const integer=(x,a,b)=>Number.isSafeInteger(x)&&x>=a&&x<=b;
 const finite=x=>typeof x==='number'&&Number.isFinite(x);

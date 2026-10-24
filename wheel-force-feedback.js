@@ -1,5 +1,6 @@
 // WebHID providers adapted from gareth10203, PR #2, commit 77149347ec286154867896137f5eee15371a259b.
 // Integrated with explicit device pairing and gameplay suspension.
+// macOS G29 report support: gareth10203, PR #3, commit 48ca11d1e38fb2b40d92c210998dbd7224f1ab8d.
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number.isFinite(value)?value:0));
 
 const T300_VENDOR_ID=0x1209;
@@ -9,7 +10,7 @@ const T300_PROTOCOL_VERSION=2;
 const PACKET_SIZE=48;
 const COMMAND=Object.freeze({stop:0,constant:1,damper:9});
 const T300_NATIVE_VENDOR_ID=0x044f,T300_NATIVE_PRODUCT_ID=0xb66e,T300_NATIVE_REPORT_ID=0x60,T300_NATIVE_PACKET_SIZE=63;
-const LOGITECH_VENDOR_ID=0x046d,LOGITECH_G29_PRODUCT_IDS=new Set([0xc24f,0xc260]),LOGITECH_REPORT_ID=0,LOGITECH_PACKET_SIZE=7;
+const LOGITECH_VENDOR_ID=0x046d,LOGITECH_G29_PRODUCT_IDS=new Set([0xc24f,0xc260]),LOGITECH_REPORT_ID=0,LOGITECH_COMMAND_SIZE=7;
 const PID_PAGE=0x0f,GENERIC_DESKTOP_PAGE=0x01;
 const PID=Object.freeze({
   EFFECT_BLOCK_INDEX:0x22,PARAMETER_BLOCK_OFFSET:0x23,CONSTANT:0x26,SPRING:0x40,DAMPER:0x41,
@@ -37,6 +38,12 @@ function itemUsages(item,page=PID_PAGE){return (item?.usages??[]).filter(usage=>
 function flattenCollections(collections,result=[]){for(const collection of collections??[]){result.push(collection);flattenCollections(collection.children,result);}return result;}
 function deviceReports(device,kind){return flattenCollections(device?.collections).flatMap(collection=>collection[kind]??[]);}
 function reportSize(report){return Math.ceil((report?.items??[]).reduce((bits,item)=>bits+(Number(item.reportSize)||0)*(Number(item.reportCount)||0),0)/8);}
+function logitechG29OutputReport(device){
+  return flattenCollections(device?.collections)
+    .filter(collection=>collection.usagePage===GENERIC_DESKTOP_PAGE&&collection.usage===0x04)
+    .flatMap(collection=>collection.outputReports??[])
+    .find(report=>report.reportId===LOGITECH_REPORT_ID&&reportSize(report)>=LOGITECH_COMMAND_SIZE)||null;
+}
 function fields(report){
   let offset=0;const result=[];
   for(const item of report?.items??[]){result.push({item,offset});offset+=(Number(item.reportSize)||0)*(Number(item.reportCount)||0);}
@@ -224,19 +231,24 @@ export class T300NativeHIDProvider {
 export class LogitechG29HIDProvider {
   static id='logitech-g29-native-hid';
   static label='Logitech G29 native FFB';
-  static filters=[...LOGITECH_G29_PRODUCT_IDS].map(productId=>({vendorId:LOGITECH_VENDOR_ID,productId}));
+  static filters=[...LOGITECH_G29_PRODUCT_IDS].map(productId=>({vendorId:LOGITECH_VENDOR_ID,productId,usagePage:GENERIC_DESKTOP_PAGE,usage:0x04}));
   static supports(device){
     if(device?.vendorId!==LOGITECH_VENDOR_ID||!LOGITECH_G29_PRODUCT_IDS.has(device?.productId))return false;
     if(device?.productName==='T300 Native FFB Compatibility Bridge')return false;
-    return deviceReports(device,'outputReports').some(report=>report.reportId===LOGITECH_REPORT_ID&&reportSize(report)===LOGITECH_PACKET_SIZE);
+    const report=logitechG29OutputReport(device),size=reportSize(report);
+    // 046d:c24f is also used by a T300 compatibility bridge. Native Logitech
+    // descriptors use seven bytes; accept a padded descriptor only when the
+    // browser identifies it as a G29, as Chrome on macOS does (16 bytes).
+    return Boolean(report)&&(size===LOGITECH_COMMAND_SIZE||device.productId!==0xc24f||/\bG29\b/i.test(String(device.productName||'')));
   }
 
   constructor(device,{schedule=globalThis.setTimeout,cancel=globalThis.clearTimeout}={}){
     this.device=device;this.schedule=schedule;this.cancel=cancel;this.expiry=null;this.active=null;
+    this.outputReport=logitechG29OutputReport(device);this.packetSize=reportSize(this.outputReport)||LOGITECH_COMMAND_SIZE;
   }
   get label(){return this.device?.productName||this.constructor.label;}
   get opened(){return Boolean(this.device?.opened);}
-  packet(...values){const packet=new Uint8Array(LOGITECH_PACKET_SIZE);packet.set(values);return packet;}
+  packet(...values){const packet=new Uint8Array(this.packetSize);packet.set(values.slice(0,LOGITECH_COMMAND_SIZE));return packet;}
   async send(...values){await this.device.sendReport(LOGITECH_REPORT_ID,this.packet(...values));}
   clearExpiry(){if(this.expiry!==null)this.cancel?.(this.expiry);this.expiry=null;}
   arm(duration){
@@ -461,7 +473,12 @@ export class WheelForceFeedback {
   }
   async request(inputId){
     if(!this.hid)throw new Error('WebHID is unavailable. Use current Chrome or Edge.');
-    const generation=this.connectionGeneration,known=gamepadHardware(inputId),filters=known?[known]:this.providers.flatMap(provider=>provider.filters||[]);
+    const generation=this.connectionGeneration,known=gamepadHardware(inputId),available=this.providers.flatMap(provider=>provider.filters||[]);
+    const filters=known?available.flatMap(filter=>{
+      if(Number.isInteger(filter.vendorId)&&filter.vendorId!==known.vendorId)return [];
+      if(Number.isInteger(filter.productId)&&filter.productId!==known.productId)return [];
+      return [{...filter,...known}];
+    }):available;
     const devices=await this.hid.requestDevice({filters});
     if(generation!==this.connectionGeneration)return null;
     if(devices?.[0]&&!acceptsWheel(inputId,devices[0]))throw new Error('Choose the same physical wheel as the selected steering input.');
@@ -532,4 +549,3 @@ export class WheelForceFeedback {
   }
   destroy(){void this.disconnect().catch(()=>{});this.hid?.removeEventListener?.('disconnect',this.handleDisconnect);}
 }
-

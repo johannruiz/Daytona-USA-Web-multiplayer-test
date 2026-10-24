@@ -1,5 +1,5 @@
-import * as firebase from './firebase-client.js?v=53.8.21';
-import {attachTurnRefresh} from './turn-refresh.js?v=53.8.21';
+import * as firebase from './firebase-client.js?v=53.8.24';
+import {attachTurnRefresh} from './turn-refresh.js?v=53.8.24';
 export const TURN_ENDPOINT='https://daytona-turn.sebiches1.workers.dev/ice-servers';
 export const DEFAULT_ICE=Object.freeze([{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'}]);
 export function validIceServers(value){

@@ -28,7 +28,7 @@ export function mountPublicRoomBrowser(directory,{join}={}){
  }
  directory.changed=render;
  $('publicRoomSearch').oninput=()=>render();$('retryPublicRooms').onclick=$('retryRoomPublish').onclick=()=>directory.retry();
- function visibility(){const isPublic=document.querySelector('input[name="roomVisibility"]:checked').value==='public';$('createRoomLabel').textContent=isPublic?'CREATE PUBLIC ROOM':'CREATE PRIVATE ROOM';$('createVisibilityHint').textContent=isPublic?'Listed for everyone · drivers enter automatically.':'Invite only · you approve new drivers.';}
+ function visibility(){const isPublic=document.querySelector('input[name="roomVisibility"]:checked').value==='public';$('createRoomLabel').textContent=isPublic?'CREATE PUBLIC ROOM':'CREATE PRIVATE ROOM';$('createVisibilityHint').textContent=isPublic?'Listed publicly and announced in Discord · drivers enter automatically.':'Invite only · you approve new drivers.';}
  for(const radio of document.querySelectorAll('input[name="roomVisibility"]'))radio.addEventListener('change',visibility);
  document.addEventListener('visibilitychange',()=>directory.setVisible(!document.hidden));
  // Pointer, keyboard, touch and gamepad focus/field changes all count as use.
