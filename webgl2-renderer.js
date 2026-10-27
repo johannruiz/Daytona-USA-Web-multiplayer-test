@@ -1,11 +1,11 @@
-import {packNight,updateNightPose} from './night-settings.js?v=53.8.24';
+import {packNight,updateNightPose} from './night-settings.js?v=53.8.30';
 // WebGL2 backend: integer RAM textures, GPU System-24 composition and bounded
 // non-blocking presentation. The native game and simulation clock are shared.
 const TILE_BYTES=0x94000+496*384,PAGE=4096,PAGES=Math.ceil(TILE_BYTES/PAGE);
 const SHADERS=['model2.vert.glsl','model2.frag.glsl','fullscreen.vert.glsl','system24.frag.glsl','tiles-present.frag.glsl'];
 export async function createWebGL2Renderer(canvas,onFailure,{onStatus=()=>{}}={}){
  const sources=await Promise.all(SHADERS.map(async name=>{
-  const response=await fetch(new URL(name+'?v=53.8.24',import.meta.url));
+  const response=await fetch(new URL(name+'?v=53.8.30',import.meta.url));
   if(!response.ok)throw Error('Could not load '+name);return response.text();
  }));
  const gl=canvas.getContext('webgl2',{alpha:false,antialias:false,depth:false,stencil:false,preserveDrawingBuffer:false,powerPreference:'high-performance'});

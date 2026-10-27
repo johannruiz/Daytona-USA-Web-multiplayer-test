@@ -1,7 +1,7 @@
-import {arrivalRoomKey} from './room-arrivals.js?v=53.8.24';
-const active=s=>s?.isHost&&['lobby','preparing','playing'].includes(s.phase);
+import {arrivalRoomKey} from './room-arrivals.js?v=53.8.30';
+const active=s=>s&&[...(s.members||[]),...(s.waiting||[])].some(p=>p.id===s.id)&&(s.isHost&&s.phase==='lobby'||['preparing','playing'].includes(s.phase)||s.phase==='waiting'&&['preparing','playing'].includes(s.remotePhase));
 export function createRoomSystemAlerts({NotificationAPI=globalThis.Notification,serviceWorkers=globalThis.navigator?.serviceWorker,secure=globalThis.isSecureContext,
- onClick=()=>{},focusWindow=()=>globalThis.focus(),token=()=>globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2),workerURL=new URL('./room-alerts-sw.js?v=53.8.24',import.meta.url),
+ onClick=()=>{},focusWindow=()=>globalThis.focus(),token=()=>globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2),workerURL=new URL('./room-alerts-sw.js?v=53.8.30',import.meta.url),
  schedule=setTimeout,cancel=clearTimeout}={}){
  let state=null,key='',stamp='',live=false,asked=false,registration=null,workerPromise=null;const notices=new Set();
  const allowed=()=>secure&&NotificationAPI?.permission==='granted';
@@ -22,7 +22,7 @@ export function createRoomSystemAlerts({NotificationAPI=globalThis.Notification,
  }
  serviceWorkers?.addEventListener('message',event=>{
   const data=event.data;
-  if(event.source!==registration?.active||data?.type!=='daytona-room-alert-click'||data.stamp!==stamp||!['joined','request'].includes(data.kind)||!active(state))return;
+  if(event.source!==registration?.active||data?.type!=='daytona-room-alert-click'||data.stamp!==stamp||!['joined','request','spectating','left'].includes(data.kind)||!active(state)||data.kind==='request'&&!state.isHost)return;
   onClick({kind:data.kind});
  });
  function clear(oldStamp){
@@ -30,8 +30,8 @@ export function createRoomSystemAlerts({NotificationAPI=globalThis.Notification,
   if(oldStamp)try{registration?.active?.postMessage({type:'daytona-room-alert-close',stamp:oldStamp});}catch{}
  }
  return {
-  sync(next){const nextKey=next.isHost?arrivalRoomKey(next):'',nextLive=active(next);if(key!==nextKey){clear(stamp);key=nextKey;stamp=key?token():'';}else if(live&&!nextLive)clear(stamp);state=next;live=nextLive;},
-  // Called synchronously by the existing Create Room gesture, never on a visit.
+  sync(next){const nextKey=arrivalRoomKey(next),nextLive=active(next);if(key!==nextKey){clear(stamp);key=nextKey;stamp=key?token():'';}else if(live&&!nextLive)clear(stamp);state=next;live=nextLive;},
+  // Called synchronously by Create/Join gestures, never on a visit.
   enable(){
    if(!secure||!NotificationAPI)return Promise.resolve(false);
    if(allowed())return ensureWorker().then(()=>true);
@@ -40,10 +40,10 @@ export function createRoomSystemAlerts({NotificationAPI=globalThis.Notification,
    return Promise.resolve(result).then(permission=>permission==='granted'?ensureWorker().then(()=>true):false).catch(()=>false);
   },
   async show(event){
-   if(!event.system||!allowed()||!current(event))return false;
+   if(!event.system||!['joined','request','spectating','left'].includes(event.kind)||event.kind==='request'&&!state?.isHost||!allowed()||!current(event))return false;
    const savedStamp=stamp,worker=await ensureWorker();if(!allowed()||!current(event,savedStamp))return false;
-   const title=event.kind==='request'?'Daytona USA · Join request':'Daytona USA · Driver joined';
-   const body=event.kind==='request'?`${event.name} requested access to ${event.roomName||'your room'}.`:`${event.name} joined ${event.roomName||'your room'}.`;
+   const title='Daytona USA · '+({request:'Join request',joined:event.spectator?'Spectator joined':'Driver joined',spectating:'Now spectating',left:'Left the room'}[event.kind]);
+   const body=event.kind==='request'?`${event.name} requested access to ${event.roomName||'your room'}.`:event.kind==='left'?`${event.name} left ${event.roomName||'your room'}.`:event.kind==='spectating'?`${event.name} is now spectating ${event.roomName||'your room'}.`:`${event.name} joined ${event.roomName||'your room'}${event.spectator?' as a spectator':''}.`;
    const tag=`daytona-${savedStamp}-${event.kind}-${event.id}`.slice(0,180);
    if(worker){try{worker.postMessage({type:'daytona-room-alert',title,body,tag,stamp:savedStamp,kind:event.kind});return true;}catch{}}
    try{

@@ -65,3 +65,16 @@
 .invite-feedback[data-state=error]{color:#a32c22}
 
 .room-panel .environment-setting{grid-column:1/-1}.room-panel .environment-help{font-size:11px;line-height:1.6;color:#68685e;margin:14px 0 0}.room-panel #raceEnvironmentPage .race-selectors{grid-template-columns:minmax(0,1fr)}
+
+/* Session labels reserve space without squeezing long names into the status. */
+.room-panel .room-players :is(.driver-in-game,.driver-preparing){grid-template-columns:25px minmax(0,1fr) 52px}
+.room-panel :is(.driver-in-game,.driver-preparing) .driver-status{white-space:nowrap}
+.room-panel .driver-in-game .driver-status{color:#276a3c;font-weight:700}
+
+/* Keep the two header actions clear of the logo on narrow phones. */
+@media(max-width:480px){
+ #menuDialog .mp-utilities #hostConsoleBtn{width:44px;padding:10px;flex-shrink:0}
+ #menuDialog .mp-utilities #hostConsoleBtn .connections-label{display:none}
+ #menuDialog .mp-utilities #settingsBtn{padding-inline:10px}
+ #menuDialog .mp-utilities .menu-quick-controls{gap:6px}
+}

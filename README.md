@@ -1,3 +1,30 @@
+# Daytona USA Web — 53.8.30: spectator fixes and multiplayer UI polish
+
+This release includes the packaged 53.8.25–53.8.30 updates:
+
+- Spectator startup validates the actual actor grid and player mapping, with
+  fixes for joining a race in progress and switching player sound.
+- Reverse CPU cars use the correct orientation reference for slope and banking
+  on all three circuits.
+- Menu titles are upright; Back icons, dropdown spacing, spectator name tags
+  and menu transitions follow the existing interface style.
+- During an arcade session, players and viewers share join, spectating and
+  departure notices. Temporary reconnections do not replay arrival notices;
+  private admission requests remain host-only. Visual notices stay out of lobby.
+- Connections now sits between Controller vibration and Settings in the room
+  header. Active cabinets display IN GAME or PREPARING; READY remains a lobby
+  state. The Last connection report shortcut was removed from the start menu.
+
+Validation includes 432 automated checks for the 53.8.29 changes and targeted
+Chrome UI checks at five viewport sizes for 53.8.30. The runtime below matches
+MANIFEST.sha256. Reload all participating browsers to use the current files.
+Mobile UI work after 53.8.30 is not part of this publication. Existing licenses,
+contributor credits and server-side security settings are preserved.
+
+---
+
+## Previous release notes
+
 # Daytona USA Web — 53.8.24: G29 macOS support and room/chat improvements
 
 Release 53.8.24 integrates [gareth10203's PR #3](https://github.com/johannruiz/Daytona-USA-Web-multiplayer-test/pull/3).

@@ -1,5 +1,5 @@
-import {DEFAULT_EEPROM} from './nvram.js?v=53.8.24';
-import {validEnvironment} from './environment.js?v=53.8.24';
+import {DEFAULT_EEPROM} from './nvram.js?v=53.8.30';
+import {validEnvironment} from './environment.js?v=53.8.30';
 export const BUILD_ID='daytona-rev-a-central-53.8.16';
 export const MODES=['Normal','Grand Prix','Endurance'];
 // Number of original MODE UP presses from the factory Normal setting.

@@ -1,4 +1,4 @@
-import {bindTouchActivation} from './touch-guard.js?v=53.8.24';
+import {bindTouchActivation} from './touch-guard.js?v=53.8.30';
 // Independent pointer IDs allow steering and pedals to be held together.
 export function createTouchControls(root, {isRunning, shift, menu, settings, sound}) {
   const pointers=new Map();

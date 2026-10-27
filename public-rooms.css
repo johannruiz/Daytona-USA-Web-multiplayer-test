@@ -28,3 +28,6 @@
 @media(max-width:900px){.discovery-layout{grid-template-columns:minmax(0,1fr) minmax(280px,.9fr)}.discovery-heading .driver-field{width:190px}.public-board-heading{flex-wrap:wrap;gap:5px}.room-entry .discovery-copy h2{font-size:22px}}
 @media(max-width:760px){.discovery-heading{flex-wrap:wrap;gap:12px;margin-bottom:14px}.discovery-heading .driver-field{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center}.discovery-heading .driver-field input{margin:0}.discovery-layout{grid-template-columns:1fr;gap:14px}.public-list-body{min-height:190px;height:220px;max-height:240px;flex:auto}.discovery-actions{grid-template-rows:auto auto;gap:12px}.discovery-actions .entry-card{padding:14px}.public-board-heading{flex-wrap:nowrap}.directory-empty{padding:18px}.room-entry input{font-size:16px!important}.public-search input{font-size:16px!important}.room-directory-notice{flex-wrap:wrap}.discovery-heading .entry-copy{min-width:0}}
 @media(prefers-reduced-motion:reduce){.public-board *{transition:none!important}}
+
+.directory-empty .directory-road{width:76px;height:60px;stroke-linejoin:round;stroke-linecap:round}
+.directory-road .road-edges{stroke-width:1.8}.directory-road .road-centre-near{stroke-width:2.3}.directory-road .road-centre-mid{stroke-width:1.8}.directory-road .road-centre-far{stroke-width:1.25}

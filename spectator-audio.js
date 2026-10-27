@@ -16,7 +16,7 @@ export function soundState(bytes){
 
 // Original ROM sound driver locally; only small real command states arrive.
 // This context is independent from the runner/UI context and its mute setting.
-export function createSpectatorAudio({button,getWasm,getVolume=()=>1,onDemand=()=>{},ready=()=>false}){
+export function createSpectatorAudio({button,getWasm,getVolume=()=>1,onDemand=()=>{},ready=()=>false,getGrid=()=>null}){
  let context,gain,next=0,enabled=false,visible=true,queue=[],lastFrame=-1,lastAt=0;
  const sources=new Set();let target='',accepted=0,frames=0,energy=0,peak=0,failures=0;
  const clear=()=>{for(const s of sources)try{s.stop();}catch{}sources.clear();next=0;queue=[];lastFrame=-1;};
@@ -34,10 +34,10 @@ export function createSpectatorAudio({button,getWasm,getVolume=()=>1,onDemand=()
  };
  return {
   refresh:render,
-  follow(id){if(id===target)return;target=id;clear();nativeOff();if(enabled&&visible)onDemand(true,target);},
+  follow(id,force=false){if(id===target&&!force)return;target=id;clear();nativeOff();if(enabled&&visible)onDemand(true,target);},
   offer(value,at=performance.now()){
    if(!enabled||!visible||value?.source!==target)return;const s=soundState(value.bytes);
-   if(s.frame<=lastFrame)return;lastFrame=s.frame;lastAt=at;queue.push({s,at});if(queue.length>8)queue.shift();
+   if(s.frame<=lastFrame)return;lastFrame=s.frame;lastAt=at;queue.push({s,at,grid:value.grid});if(queue.length>8)queue.shift();
   },
   apply(now=performance.now()){
    render();if(!enabled||!visible||!ready())return;
@@ -45,6 +45,7 @@ export function createSpectatorAudio({button,getWasm,getVolume=()=>1,onDemand=()
    // Match the visual interpolation delay; obsolete intermediate controls
    // coalesce. Transient IDs in the native state prevent duplicate effects.
    let value;while(queue.length&&now-queue[0].at>=100)value=queue.shift();if(!value)return;
+   if(value.grid!==undefined&&getGrid()!==null&&value.grid!==getGrid())return;
    if(!m._daytona_spectator_sound_enable(1))return;
    m.HEAPU8.set(new Uint8Array(value.s.bytes),m._daytona_spectator_sound_input());
    if(m._daytona_spectator_sound_accept(value.s.bytes.byteLength))accepted++;

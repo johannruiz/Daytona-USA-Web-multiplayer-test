@@ -1,16 +1,16 @@
-import {turnClient,maintainIceConfiguration} from './turn-client.js?v=53.8.24';
-import {TransportProbe,attachDataChannelProbe,transportSignals} from './transport-probe.js?v=53.8.24';
-import {LatestFlow} from './latest-flow.js?v=53.8.24';
-import {MotionChannel,MOTION_VERSION,motionChannelId} from './motion-channel.js?v=53.8.24';
-import {HostRaceAuthority,RaceOrderInbox,validateRaceOrder} from './race-authority.js?v=53.8.24';
-import {HostDistributor,STATE_BYTES,STATE_TAG,compactState,expandState,linkIdForSeat} from './central-link.js?v=53.8.24';
-import {SnapshotFlow} from './snapshot-flow.js?v=53.8.24';
-import {LinkClock,receivedTiming,sourceTiming} from './link-timing.js?v=53.8.24';
-import {HealthSampler,normalizeHealth,STOP_CAUSES,cleanReason} from './connection-health.js?v=53.8.24';
-import {PerformanceHistory,PERFORMANCE_BATCH_LIMIT,normalizePerformanceSample} from './performance-history.js?v=53.8.24';
-import {BUILD_ID,validateSettings,invitation,parseInvitation} from './room-settings.js?v=53.8.24';
-import {validPlayerSkin,skinOwner,validateSkinRoster} from './player-skins.js?v=53.8.24';
-import {RoomEnvironmentClock} from './environment.js?v=53.8.24';
+import {turnClient,maintainIceConfiguration} from './turn-client.js?v=53.8.30';
+import {TransportProbe,attachDataChannelProbe,transportSignals} from './transport-probe.js?v=53.8.30';
+import {LatestFlow} from './latest-flow.js?v=53.8.30';
+import {MotionChannel,MOTION_VERSION,motionChannelId} from './motion-channel.js?v=53.8.30';
+import {HostRaceAuthority,RaceOrderInbox,validateRaceOrder} from './race-authority.js?v=53.8.30';
+import {HostDistributor,STATE_BYTES,STATE_TAG,compactState,expandState,linkIdForSeat} from './central-link.js?v=53.8.30';
+import {SnapshotFlow} from './snapshot-flow.js?v=53.8.30';
+import {LinkClock,receivedTiming,sourceTiming} from './link-timing.js?v=53.8.30';
+import {HealthSampler,normalizeHealth,STOP_CAUSES,cleanReason} from './connection-health.js?v=53.8.30';
+import {PerformanceHistory,PERFORMANCE_BATCH_LIMIT,normalizePerformanceSample} from './performance-history.js?v=53.8.30';
+import {BUILD_ID,validateSettings,invitation,parseInvitation} from './room-settings.js?v=53.8.30';
+import {validPlayerSkin,skinOwner,validateSkinRoster} from './player-skins.js?v=53.8.30';
+import {RoomEnvironmentClock} from './environment.js?v=53.8.30';
 const token=()=>Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,'0')).join('');
 const cleanName=value=>String(value||'Driver').trim().slice(0,24)||'Driver';
 export const CHAT_LIMIT=240,CHAT_HISTORY_LIMIT=60,CHAT_INTERVAL_MS=900;
@@ -433,6 +433,7 @@ export class Multiplayer {
   if(!this.active||!this.members.some(m=>m.id===id)||!Number.isInteger(scene)||scene<0||scene>31)return;
   if(this.isHost&&id===this.members[0]?.id){const run=this.environment.run;this.environment.observe(scene);if(this.settings.environment==='cycle'&&this.environment.run!==run)this.broadcastRoom({type:'environment-start',epoch:this.epoch,environment:this.environment.anchor()});}
   if(this.chatScenes.get(id)===scene)return;const before=this.chatAllowed(id);this.chatScenes.set(id,scene);
+  if(this.isHost)this.spectators?.assignViewers();
   if(scene<=10)this.chatLocked.delete(id);else if(scene>=22)this.chatLocked.add(id);
   if(id===this.id&&before!==this.chatAllowed(id)){if(!this.chatAllowed(id))for(const [key,c] of this.commands)if(c.data.type==='chat-submit')this.commands.delete(key);this.changed();}
  }

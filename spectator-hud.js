@@ -1,5 +1,5 @@
-import {linkIdForSeat} from './central-link.js?v=53.8.24';
-import {carColor} from './car-colors.js?v=53.8.24';
+import {linkIdForSeat} from './central-link.js?v=53.8.30';
+import {carColor} from './car-colors.js?v=53.8.30';
 
 // Reads the spectator's local clone. Nothing here requests or sends network data.
 export function mountSpectatorHUD(root){
@@ -12,7 +12,7 @@ export function mountSpectatorHUD(root){
   const driver=members.find(m=>m.id===selected),row=rows.find(r=>r.id===selected);
   panel.hidden=!driver||!rows.length;if(panel.hidden)return;
   const next=JSON.stringify([selected,rows,total,scene,confirmed]);if(next===key)return;key=next;
-  name.textContent=driver.name;place.textContent=row?.position?String(row.position)+' / '+members.length:'—';
+  name.textContent=driver.name;place.textContent=row?.position?String(row.position)+' / '+rows.length:'—';
   lap.textContent=row&&total?Math.min(total,row.lap+1)+' / '+total:'—';
   heading.textContent=confirmed?'CONFIRMED RESULTS':scene>=23?'RACE ORDER · NOT FINAL':'RACE ORDER';
   list.replaceChildren(...rows.slice().sort((a,b)=>(a.position??99)-(b.position??99)||a.cabinet-b.cabinet).map(r=>{
@@ -34,7 +34,7 @@ export function mountSpectatorHUD(root){
      if(index<0)continue;const rank=data[p+1];
      fresh.push({...members[index],position:rank>=1&&rank<=data[2]?rank:null,lap:data[p+2],finished:!!data[p+3]});
     }
-    if(fresh.length===members.length&&new Set(fresh.map(r=>r.id)).size===members.length){
+    if(fresh.length===data[2]&&new Set(fresh.map(r=>r.id)).size===data[2]){
      // The arcade can expose duplicate initial ranks during the rolling start.
      // Keep the real names/laps, but never present that as a valid race order.
      const valid=fresh.every(r=>r.position!==null)&&new Set(fresh.map(r=>r.position)).size===fresh.length;

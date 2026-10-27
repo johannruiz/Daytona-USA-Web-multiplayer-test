@@ -1,7 +1,7 @@
-import {DEFAULT_EEPROM} from './nvram.js?v=53.8.24';
-import {raceOptionsMask,validateSettings} from './room-settings.js?v=53.8.24';
-import {validPlayerSkin} from './player-skins.js?v=53.8.24';
-import {validEnvironment} from './environment.js?v=53.8.24';
+import {DEFAULT_EEPROM} from './nvram.js?v=53.8.30';
+import {raceOptionsMask,validateSettings} from './room-settings.js?v=53.8.30';
+import {validPlayerSkin} from './player-skins.js?v=53.8.30';
+import {validEnvironment} from './environment.js?v=53.8.30';
 
 export const SINGLE_SETTINGS_ID='daytona-single-player-race-v1';
 export const DEFAULT_SINGLE_SETTINGS=Object.freeze({mode:0,difficulty:0,cpuCars:true,reverse:false,pitStops:true,region:'Export',skin:0,environment:'day'});

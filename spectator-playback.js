@@ -1,14 +1,14 @@
-import {mountSpectatorStatus} from './spectator-view.js?v=53.8.24';
-import {BUILD_ID,validateSettings} from './room-settings.js?v=53.8.24';
-import {DEFAULT_EEPROM} from './nvram.js?v=53.8.24';
-import {linkIdForSeat} from './central-link.js?v=53.8.24';
-import {createRenderer} from './renderer.js?v=53.8.24';
-import {transformPacket} from './spectator-codec.js?v=53.8.24';
-import {SPECTATOR_VERSION,SpectatorWorldBuffer,worldState} from './spectator-world.js?v=53.8.24';
-import {ARCADE_STEP_MS} from './simulation-clock.js?v=53.8.24';
-import {mountSpectatorHUD} from './spectator-hud.js?v=53.8.24';
-import {createEnvironment,environmentSnapshot} from './environment.js?v=53.8.24';
-import {createSpectatorAudio} from './spectator-audio.js?v=53.8.24';
+import {mountSpectatorStatus} from './spectator-view.js?v=53.8.30';
+import {BUILD_ID,validateSettings} from './room-settings.js?v=53.8.30';
+import {DEFAULT_EEPROM} from './nvram.js?v=53.8.30';
+import {linkIdForSeat} from './central-link.js?v=53.8.30';
+import {createRenderer} from './renderer.js?v=53.8.30';
+import {transformPacket} from './spectator-codec.js?v=53.8.30';
+import {SPECTATOR_VERSION,SpectatorWorldBuffer,worldState,worldGridSignature} from './spectator-world.js?v=53.8.30';
+import {ARCADE_STEP_MS} from './simulation-clock.js?v=53.8.30';
+import {mountSpectatorHUD} from './spectator-hud.js?v=53.8.30';
+import {createEnvironment,environmentSnapshot} from './environment.js?v=53.8.30';
+import {createSpectatorAudio} from './spectator-audio.js?v=53.8.30';
 
 export function createSpectatorPlayback({room,getROM,getVolume=()=>1,root,onStatus=()=>{}}){
  const $=id=>root.querySelector('#'+id),hud=mountSpectatorHUD(root);
@@ -17,10 +17,10 @@ export function createSpectatorPlayback({room,getROM,getVolume=()=>1,root,onStat
  let wasm,renderer,ready,stream,epoch='',generation=0,disposed=false,visible=true,prepared=false,booting=false,initializedCourse=-1,
   members=[],donor=null,selected=null,latest=null,buffer=new SpectatorWorldBuffer(),raf,lastTick=0,debt=0,currentCamera=-1,
   lastWire=0,handshakeDeadline=0,feedConfigured=false,metricsAt=performance.now(),packets=0,receivedBytes=0,boots=0,failure='';
- let environmentMode='day',renderedWorld=null,environmentClock={run:0,elapsed:0},environmentAt=0;
+ let environmentMode='day',renderedWorld=null,environmentClock={run:0,elapsed:0},environmentAt=0,gridKey='',activeIds=new Set();
  const sharedEnvironment=()=>{const shared=room.environmentState?.()??room.environment?.snapshot();return shared?.run?shared:{run:environmentClock.run,elapsed:environmentClock.run?environmentClock.elapsed+Math.max(0,performance.now()-environmentAt)/1000:0};};
  const environment=createEnvironment({engine:()=>wasm,renderer:()=>renderer,context:()=>({mode:environmentMode,clock:sharedEnvironment()})});
- const audio=createSpectatorAudio({button:$('spectatorSound'),getWasm:()=>wasm,getVolume,ready:()=>prepared,onDemand:(on,target)=>{if(stream?.open&&feedConfigured&&members.some(m=>m.id===target))stream.send({type:'spectator-audio-select',target,on});}});
+ const audio=createSpectatorAudio({button:$('spectatorSound'),getWasm:()=>wasm,getVolume,ready:()=>prepared,getGrid:()=>worldGridSignature(renderedWorld||latest),onDemand:(on,target)=>{if(stream?.open&&feedConfigured&&members.some(m=>m.id===target))stream.send({type:'spectator-audio-select',target,on});}});
  const loading=(on,value=0)=>{$('spectatorLoading').hidden=!on;$('spectatorLoadProgress').value=value;};
  for(const o of $('spectatorCamera').options)o.disabled=Number(o.value)<0;$('spectatorCamera').value='2';
  audio.refresh();
@@ -28,7 +28,7 @@ export function createSpectatorPlayback({room,getROM,getVolume=()=>1,root,onStat
  async function ensureReady(){
   if(!ready)ready=(async()=>{
    const file=getROM();if(!file)throw Error('Choose a ROM before watching.');
-   const next=await createDaytonaModule();if(disposed)return;wasm=next;
+   const next=await createDaytonaModule({locateFile:name=>new URL(name+'?v=53.8.30',import.meta.url).href});if(disposed)return;wasm=next;
    // A disposed WebGL/WebGPU renderer leaves context and compositor state on
    // its canvas. A later spectator session owns a fresh graphics surface,
    // rather than reinitializing a retired context on the previous canvas.
@@ -38,7 +38,7 @@ export function createSpectatorPlayback({room,getROM,getVolume=()=>1,root,onStat
   })().catch(e=>{ready=null;throw e;});return ready;
  }
  function stop(message){audio.stop();failure=message;prepared=false;generation++;loading(false);status(message,'interrupted');}
- function reset(message='Drivers are in the lobby.'){audio.stop();generation++;const previous=stream;stream=null;previous?.close();prepared=false;latest=null;renderedWorld=null;environmentClock={run:0,elapsed:0};environmentMode='day';environment.pause();failure='';lastWire=handshakeDeadline=0;feedConfigured=false;buffer=new SpectatorWorldBuffer();hud.reset();loading(false);status(message,'offline');}
+ function reset(message='Drivers are in the lobby.'){audio.stop();generation++;const previous=stream;stream=null;previous?.close();prepared=false;latest=null;renderedWorld=null;gridKey='';activeIds.clear();environmentClock={run:0,elapsed:0};environmentMode='day';environment.pause();failure='';lastWire=handshakeDeadline=0;feedConfigured=false;buffer=new SpectatorWorldBuffer();hud.reset();loading(false);status(message,'offline');}
  function configure(config){
   const settings=validateSettings(config.settings);environmentMode=settings.environment;environmentClock=environmentSnapshot(config.environmentClock)??{run:0,elapsed:0};environmentAt=performance.now();const grid=config.members;
   if(config.epoch!==epoch||!Array.isArray(grid)||grid.length<1||grid.length>8||grid.some(m=>typeof m.id!=='string'||m.id.length>100||typeof m.name!=='string'||m.name.length>24||!Number.isInteger(m.cabinet)||m.cabinet<1||m.cabinet>8||!Number.isInteger(m.skin)||m.skin<0||m.skin>39)||new Set(grid.map(m=>m.id)).size!==grid.length||new Set(grid.map(m=>m.cabinet)).size!==grid.length)throw Error('Invalid spectator grid.');
@@ -77,7 +77,8 @@ export function createSpectatorPlayback({room,getROM,getVolume=()=>1,root,onStat
    if((wasm._daytona_spectator_world_phase()&255)!==22)throw Error('The circuit loader did not reach a race.');
    // Complete original texture upload and rolling-camera setup while hidden.
    if(!await step(700,64))return;loading(true,90);
-   if((wasm._daytona_spectator_world_phase()>>>8)!==40)throw Error('The spectator actor grid was not initialized.');
+   const capacity=wasm._daytona_spectator_world_phase()>>>8;
+   if(capacity<latest.count||capacity>40)throw Error('The spectator actor grid was not initialized.');
    initializedCourse=course;renderer.reset();renderer.setDrawDistance(1);accept(buffer.sample()||latest);
    boots++;prepared=true;currentCamera=-1;debt=0;lastTick=performance.now();loading(false);status('',latest?.scene>=23?'finished':'live');
   }catch(e){if(ticket===generation)stop(e.message);}
@@ -85,7 +86,14 @@ export function createSpectatorPlayback({room,getROM,getVolume=()=>1,root,onStat
  }
  function receive(s,at){
   if(!buffer.accept(s,at))return;latest=s;lastWire=performance.now();
-  if(!race(s)){if(prepared||audio.state().enabled)audio.stop();prepared=false;loading(false);status('Waiting for drivers to enter a race.','waiting');return;}
+  if(!race(s)){gridKey='';if(prepared||audio.state().enabled)audio.stop();prepared=false;loading(false);status('Waiting for drivers to enter a race.','waiting');return;}
+  const key=`${s.run}:${s.course}:${worldGridSignature(s)}`;
+  if(key!==gridKey){
+   gridKey=key;const links=new Set(s.words.slice(16,16+s.words[6]));activeIds=new Set(members.filter((m,i)=>links.has(linkIdForSeat(i+1,members.length))).map(m=>m.id));
+   if(!activeIds.has(selected?.id))selected=activeIds.has(donor?.id)?donor:members.find(m=>activeIds.has(m.id));
+   for(const option of $('spectatorDriver').options){const member=members.find(m=>m.id===option.value);option.disabled=!activeIds.has(option.value);option.textContent=member.name+' · Car '+member.cabinet+(option.disabled?' · Waiting to race':'');}
+   $('spectatorDriver').value=selected.id;hud.reset(members);hud.select(selected.id);audio.follow(selected.id,true);
+  }
   if(booting)return;
   if(initializedCourse!==s.course){void loadCourse(s);return;}
   if(!prepared){accept(s);prepared=true;lastTick=performance.now();debt=0;status('',s.scene>=23?'finished':'live');}
@@ -130,7 +138,7 @@ export function createSpectatorPlayback({room,getROM,getVolume=()=>1,root,onStat
   if(!failure&&roomPhase==='playing'&&stream?.open&&feedConfigured&&lastWire&&now-lastWire>10000)stop('The race feed stopped responding. Return to the room to reconnect.');
   if(now-metricsAt>=1000){$('spectatorMetrics').textContent=`${Math.round(packets*1000/(now-metricsAt))} states/s · ${Math.round(receivedBytes*1000/(now-metricsAt)/1024)} KiB/s · ${buffer.frames.length}/8 recent states · No history`;packets=receivedBytes=0;metricsAt=now;}
  }
- $('spectatorDriver').onchange=()=>{selected=members.find(m=>m.id===$('spectatorDriver').value)||donor;if(selected){hud.select(selected.id);audio.follow(selected.id);}};
+ $('spectatorDriver').onchange=()=>{const next=members.find(m=>m.id===$('spectatorDriver').value);if(!next||!activeIds.has(next.id))return;selected=next;hud.select(selected.id);audio.follow(selected.id);};
  status('Drivers are in the lobby.','offline');raf=requestAnimationFrame(frame);
  return {message(d){if(disposed)return;if(d.type==='spectator-assignment'){try{connect(d);}catch(e){stop(e.message);}}else if(d.type==='spectator-status'&&!prepared&&!booting)status(String(d.message||'').slice(0,160),roomPhase==='lobby'?'offline':'connecting');},
   sync(state){
@@ -142,7 +150,7 @@ export function createSpectatorPlayback({room,getROM,getVolume=()=>1,root,onStat
    else if(roomPhase==='preparing'&&!prepared&&!booting)status('Starting the arcade cabinets…','connecting');
    else if(roomPhase==='playing'){if(previous!=='playing'&&feedConfigured&&!latest)lastWire=performance.now();if(mode==='offline')status('Connecting to the race feed…','connecting');}
   },
-  reset,warm(){void ensureReady().catch(e=>status(e.message));},visible(on){visible=!!on;audio.visible(visible);},
+  reset,warm(){void ensureReady().catch(e=>status(e.message));},visible(on){const opening=!!on&&!visible;visible=!!on;audio.visible(visible);if(opening&&failure&&['preparing','playing'].includes(roomPhase))room.spectators?.reconnect();},
   state:()=>({environment:environment.state(),prepared,booting,boots,course:initializedCourse,frame:wasm?._daytona_total_frames(),scene:latest?.scene,sourceFrame:latest?.frame,queued:buffer.frames.length,received:buffer.received,epoch,relay:donor?.id,target:selected?.id,camera:currentCamera,focus:wasm?._daytona_spectator_focus(),hud:hud.snapshot(),history:false,viewState:mode,feedConfigured,audio:audio.state(),failure,localPhase:wasm?._daytona_spectator_world_phase()}),
   dispose(){disposed=true;cancelAnimationFrame(raf);reset('');audio.dispose();renderer?.dispose();renderer=null;wasm=null;}
  };

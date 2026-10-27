@@ -5,6 +5,7 @@ export function createLobbySound({context,output,muted=()=>false,clock=()=>perfo
   let last=-Infinity,lastKind='';
   const patterns={
     arrival:{notes:[[392,0,.13],[493.88,0,.13],[783.99,.18,.22],[987.77,.18,.22]],level:.044,colour:.22},
+    departure:{notes:[[783.99,0,.13],[987.77,0,.13],[392,.18,.22],[493.88,.18,.22]],level:.044,colour:.22},
     request:{notes:[[523.25,0,.14],[783.99,.08,.14],[1046.50,.20,.28]],level:.070,colour:1.25},
     chat:{notes:[[987.77,0,.10],[1318.51,.065,.19]],level:.048,colour:.85},
     ready:{notes:[[659.25,0,.12],[659.25,.14,.12],[987.77,.30,.25]],level:.072,colour:.65},

@@ -1,4 +1,4 @@
-import {classifyConnection,describeEvent} from './connection-health.js?v=53.8.24';
+import {classifyConnection,describeEvent} from './connection-health.js?v=53.8.30';
 const $=id=>document.getElementById(id);
 const node=(tag,text,className)=>{const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(className)el.className=className;return el;};
 const ms=v=>Number.isFinite(v)?v<1000?`${v>0&&v<1?v.toFixed(2):Math.round(v)} ms`:`${(v/1000).toFixed(1)} s`:'—';
@@ -106,11 +106,10 @@ export function mountHostConsole(room){
  }
  function close(){if(!open)return;open=false;clearInterval(timer);timer=null;panel.hidden=true;dialog.classList.remove('host-console-view');$('mainMenu').hidden=previous.main;$('settingsModal').hidden=previous.settings;dialog.setAttribute('aria-labelledby',previous.title||'gameTitle');if(origin&&!origin.hidden)origin.focus();}
  function sync(){
-  $('hostConsoleBtn').hidden=!room.isHost||!room.members.length;$('lastHostConsoleBtn').hidden=room.isHost||!room.lastHostReport;
-  $('lastHostConsoleBtn').textContent='Last connection report';
+  $('hostConsoleBtn').hidden=!room.isHost||!room.members.length;
   if(open)render();
  }
- $('hostConsoleBtn').onclick=()=>show($('hostConsoleBtn'));$('lastHostConsoleBtn').onclick=()=>show($('lastHostConsoleBtn'));$('hostConsoleBack').onclick=close;
+ $('hostConsoleBtn').onclick=()=>show($('hostConsoleBtn'));$('hostConsoleBack').onclick=close;
  $('hostConsoleExport').onclick=()=>{render();const report=room.consoleSnapshot({includePerformance:true});if(!report)return;downloadReport({...report,reportVersion:4,notes:['RTT is host-to-player round trip, not player-to-player latency.','SIM is measured emulation steps per second, not display FPS.','Remote status and game performance are participant-reported. Archived connection measurements are frozen.','Game payload counters exclude protocol overhead and room messages. RTC message counters include serialized room/diagnostic messages, not UDP/IP headers or retransmissions.','Transport windows retain up to 256 observations. Timing percentiles are milliseconds; buffered percentiles are bytes. Transport recording resets when diagnostics are toggled or a channel is replaced.','State source ages are estimates; inspect clock uncertainty separately. Native delivery is receipt-to-next-step, not display latency.','Gated send attempts are scheduling checks, not packets dropped. PeerJS preparation includes synchronous bookkeeping, not only serialization.','Signals are threshold hints, not independently established failure causes.','motionTransport records the discardable channel; transport records the reliable PeerJS channel. RTC traffic shown is the sum; ICE counters share one association and must not be summed twice.','Latest delivery stores at most 256 receipt records, without a credit gate. Its 32-bit receiver bitmap permits 16 newer deliveries before estimating receipt gaps; uncovered observations remain unknown. These gaps and expired/superseded receipts are not measured UDP loss.','Movement receipts piggyback on outgoing states and existing reliable ping/pong messages. One submitted state and one latest local pending state bound the application queue. Both channels share one SCTP association and its congestion control.','Packet loss percentage and underlying network failure causes are unavailable.']},'daytona-host-connections');};
  sync();return {sync,close,isOpen:()=>open};
 }

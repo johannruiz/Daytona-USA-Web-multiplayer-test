@@ -37,7 +37,7 @@
 .mp-view #mainMenu .game-logo{position:absolute;top:18px;left:26px;width:112px;margin:0;padding:0;max-width:none}
 .mp-view #mainMenu .game-logo img{width:100%}
 .mp-view #mainMenu .edition,.mp-view #mainMenu>.rom-modal>.message,.mp-view #mainMenu .rom-meta,.mp-view #mainMenu .launch-options,.mp-view #mainMenu .first-run,.mp-view #mainMenu>.controls-guide{display:none}
-.mp-view.mp-entry #mainMenu>.controls-guide{display:block;width:100%;max-width:none;margin-inline:0}
+
 .mp-utilities{position:absolute;right:26px;top:24px}
 .mp-utilities .menu-quick-controls{gap:16px;color:#4b4b43;font-size:11px}
 .mp-utilities .menu-quick-controls button{background:#fff;border-color:#b8b8b0;color:#29291f;min-height:38px}

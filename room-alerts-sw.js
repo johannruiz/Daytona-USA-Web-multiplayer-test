@@ -7,7 +7,7 @@ self.addEventListener('message',event=>{
  if(data.type==='daytona-room-alert-close'){
   event.waitUntil(self.registration.getNotifications().then(list=>{for(const n of list)if(n.data?.clientId===client.id&&n.data?.stamp===data.stamp)n.close();}));return;
  }
- if(data.type!=='daytona-room-alert'||!['joined','request'].includes(data.kind)||typeof data.title!=='string'||data.title.length>80||typeof data.body!=='string'||data.body.length>160||typeof data.tag!=='string'||data.tag.length>180)return;
+ if(data.type!=='daytona-room-alert'||!['joined','request','spectating','left'].includes(data.kind)||typeof data.title!=='string'||data.title.length>80||typeof data.body!=='string'||data.body.length>160||typeof data.tag!=='string'||data.tag.length>180)return;
  event.waitUntil(self.registration.showNotification(data.title,{body:data.body,tag:data.tag,silent:true,icon:new URL('daytona-logo.png',appURL).href,
   data:{clientId:client.id,stamp:data.stamp,kind:data.kind}}).catch(()=>{}));
 });

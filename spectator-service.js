@@ -1,14 +1,26 @@
-import {BUILD_ID} from './room-settings.js?v=53.8.24';
-import {SPECTATOR_VERSION,SPECTATOR_HZ} from './spectator-world.js?v=53.8.24';
-import {transformPacket} from './spectator-codec.js?v=53.8.24';
-import {soundState} from './spectator-audio.js?v=53.8.24';
+import {BUILD_ID} from './room-settings.js?v=53.8.30';
+import {SPECTATOR_VERSION,SPECTATOR_HZ} from './spectator-world.js?v=53.8.30';
+import {transformPacket} from './spectator-codec.js?v=53.8.30';
+import {soundState} from './spectator-audio.js?v=53.8.30';
+import {linkIdForSeat} from './central-link.js?v=53.8.30';
 const token=()=>Array.from(crypto.getRandomValues(new Uint8Array(16)),v=>v.toString(16).padStart(2,'0')).join('');
 const name=v=>String(v||'Spectator').replace(/\s+/gu,' ').trim().slice(0,24)||'Spectator';
 const CAP=8,QUEUE=262144;
+// Race participants can be a subset of the connected cabinets. Validate the
+// source's real link table before interpreting its original actor number.
+const soundSource=(room,id,state,grid)=>{
+ const index=room.members.findIndex(m=>m.id===id);if(index<0||state.scene<22||state.scene>29)return false;
+ if(grid===undefined){grid=0;for(let i=0;i<room.members.length;i++)grid|=(i+1)<<(i*4);grid>>>=0;}
+ if(!Number.isInteger(grid)||grid<1||grid>0xffffffff)return false;
+ const links=[],seen=new Set();let value=grid;for(let i=0;i<8;i++){const link=value&15;if(!link){if(value)return false;break;}if(link>room.members.length||seen.has(link))return false;links.push(link);seen.add(link);value>>>=4;}
+ return links[state.actor]===linkIdForSeat(index+1,room.members.length);
+};
 export class SpectatorService {
  constructor(room,{getWasm=()=>null,onChange=()=>{},onMessage=()=>{}}={}){Object.assign(this,{room,getWasm,onChange,onMessage});this.viewers=new Map();this.tickets=new Map();this.streams=new Map();this.config=null;this.phase='';this.epoch='';this.frames=[];this.orders=[];this.frame=null;this.serial=0;this.busy=false;this.sending=false;this.timer=null;this.generation=0;this.reaper=null;this.audioWatches=new Map();this.audioPolicies=new Map();this.audioLatest=new Map();this.audioCapture=false;this.audioSentAt=-Infinity;this.audioRates=new Map();this.audioBytes=0;}
  snapshot(){return {viewers:[...this.viewers.values()].filter(v=>v.conn.open).map(v=>({id:v.conn.peer,name:v.name,approved:v.approved,relay:v.relay,connected:v.conn.open})),streams:this.streams.size};}
  changed(){this.onChange(this.snapshot());}
+ reconnect(){return this.room.isHost?this.reassign(this.room.id):this.send(this.room.server,{type:'spectator-reconnect',epoch:this.room.waitEpoch||this.room.epoch});}
+ reassign(id){const v=this.viewers.get(id),now=performance.now();if(!this.room.isHost||!v?.approved||!v.conn.open||!['preparing','playing'].includes(this.room.phase)||now-(v.retryAt??-Infinity)<5000)return false;v.retryAt=now;this.revoke(v);this.assignViewers();return true;}
  send(c,d){if(!c?.open||c.dataChannel?.bufferedAmount>QUEUE)return false;try{c.send(d);return true;}catch{return false;}}
  connection(c){
   const meta=c.metadata;if(!['spectator-control','spectator-stream'].includes(meta?.role))return false;
@@ -42,9 +54,9 @@ export class SpectatorService {
   const v=this.viewers.get(viewer);if(!this.room.isHost||!v?.approved||v.relay!==relay||!this.room.active)return;
   if(on&&this.room.members.some(m=>m.id===target))this.audioWatches.set(viewer,{relay,target});else this.audioWatches.delete(viewer);this.audioPolicy();
  }
- audioRoute(source,bytes){
+ audioRoute(source,bytes,grid){
   const relays=new Set([...this.audioWatches.values()].filter(w=>w.target===source).map(w=>w.relay));
-  for(const id of relays){if(id===this.room.id){this.audioLatest.set(source,{bytes,at:performance.now()});continue;}const c=this.room.connections.get(id);if((c?.dataChannel?.bufferedAmount||0)<8192)this.send(c,{type:'spectator-audio-relay',epoch:this.room.epoch,source,bytes});}
+  for(const id of relays){if(id===this.room.id){this.audioLatest.set(source,{bytes,grid,at:performance.now()});continue;}const c=this.room.connections.get(id);if((c?.dataChannel?.bufferedAmount||0)<8192)this.send(c,{type:'spectator-audio-relay',epoch:this.room.epoch,source,bytes,...(grid!==undefined?{grid}:{})});}
  }
  sync(state){
   if(this.room.isHost&&this.room.waiters){
@@ -66,8 +78,12 @@ export class SpectatorService {
  }
  assignViewers(){
   if(!this.room.isHost)return;
-  const relays=this.room.members.filter(m=>m.id!==this.room.host&&m.id!==this.room.id&&m.connection!=='reconnecting'&&this.room.connections.get(m.id)?.open),loads=new Map();
+  let relays=this.room.members.filter(m=>m.id!==this.room.host&&m.id!==this.room.id&&m.connection!=='reconnecting'&&this.room.connections.get(m.id)?.open);const loads=new Map();
   if(this.soloHostRelay)relays.push(this.room.members[0]);
+  const racing=relays.filter(m=>{const scene=this.room.chatScenes?.get(m.id);return scene>=22&&scene<=29;});
+  // A connected cabinet can remain in attract while the others race. Move a
+  // waiting feed to an actual racer; never add host upload in a linked room.
+  if(racing.length){relays=racing;for(const v of this.viewers.values())if(v.relay&&!relays.some(m=>m.id===v.relay))this.revoke(v);}
   for(const v of this.viewers.values())if(v.relay)loads.set(v.relay,(loads.get(v.relay)||0)+1);
   for(const v of this.viewers.values()){
    if(v.relay||!v.approved||!v.conn.open)continue;
@@ -83,19 +99,20 @@ export class SpectatorService {
   }
  }
  handle(c,d){
+  if(d?.type==='spectator-reconnect'){if(this.room.isHost&&d.epoch===this.room.epoch)this.reassign(c.peer);return true;}
   if(d&&['spectator-audio-watch','spectator-audio-capture','spectator-audio-state','spectator-audio-relay'].includes(d.type)){
    try{
     const room=this.room;
     if(room.isHost){
      if(d.type==='spectator-audio-watch'&&d.epoch===room.epoch&&typeof d.on==='boolean')this.audioWatch(c.peer,d.viewer,d.target,d.on);
      else if(d.type==='spectator-audio-state'&&room.active&&d.epoch===room.epoch&&this.audioPolicies.get(c.peer)){
-      const state=soundState(d.bytes),at=performance.now();if(state.actor!==room.members.findIndex(m=>m.id===c.peer)||at-(this.audioRates.get(c.peer)??-Infinity)<30)return true;this.audioRates.set(c.peer,at);this.audioRoute(c.peer,d.bytes);
+      const state=soundState(d.bytes),at=performance.now();if(!soundSource(room,c.peer,state,d.grid)||at-(this.audioRates.get(c.peer)??-Infinity)<30)return true;this.audioRates.set(c.peer,at);this.audioRoute(c.peer,d.bytes,d.grid);
      }
     }else if(c===room.server){
      if(d.type==='spectator-audio-capture'&&typeof d.on==='boolean'&&(!d.on||room.active&&d.epoch===room.epoch)){
       this.audioCapture=d.on;this.getWasm()?._daytona_spectator_sound_capture?.(Number(d.on));
      }else if(d.type==='spectator-audio-relay'&&room.active&&d.epoch===room.epoch&&this.streams.size){
-      const state=soundState(d.bytes);if(state.actor===room.members.findIndex(m=>m.id===d.source))this.audioLatest.set(d.source,{bytes:d.bytes,at:performance.now()});
+      const state=soundState(d.bytes);if(soundSource(room,d.source,state,d.grid))this.audioLatest.set(d.source,{bytes:d.bytes,grid:d.grid,at:performance.now()});
      }
     }
    }catch{} // A malformed optional audio packet never interrupts racing peers.
@@ -114,6 +131,9 @@ export class SpectatorService {
   const s={conn:c,begun:false,epoch:m.epoch,audioTarget:'',audioOn:false};this.streams.set(c.peer,s);
   c.on('open',()=>{this.begin(s);this.ensureTimer();this.changed();});
   c.on('data',d=>{
+   // The shared ICE-renewal listener handles its own bounded protocol on every
+   // PeerJS connection, including visual streams. It is not spectator input.
+   if(d?.type==='turn-refresh')return;
    if(d?.type!=='spectator-audio-select'||typeof d.on!=='boolean'||typeof d.target!=='string'||!this.config?.members.some(m=>m.id===d.target)){c.close();return;}
    s.audioTarget=d.target;s.audioOn=d.on;clearTimeout(s.audioWatchTimer);
    const publish=()=>{s.audioWatchAt=performance.now();if(this.room.isHost)this.audioWatch(this.room.id,c.peer,s.audioTarget,s.audioOn);else this.send(this.room.server,{type:'spectator-audio-watch',epoch:s.epoch,viewer:c.peer,target:s.audioTarget,on:s.audioOn});};
@@ -135,8 +155,9 @@ export class SpectatorService {
   const wasm=this.getWasm();wasm?._daytona_spectator_sound_capture?.(Number(this.audioCapture));
   if(!this.audioCapture||!this.room.active||now-this.audioSentAt<65||!wasm?._daytona_spectator_sound_export)return;
   this.audioSentAt=now;const ptr=wasm._daytona_spectator_sound_export(),size=wasm._daytona_spectator_sound_size();if(!ptr||!size)return;
-  const bytes=wasm.HEAPU8.slice(ptr,ptr+size).buffer;this.audioBytes+=size;
-  if(this.room.isHost)this.audioRoute(this.room.id,bytes);else if((this.room.server?.dataChannel?.bufferedAmount||0)<8192)this.send(this.room.server,{type:'spectator-audio-state',epoch:this.room.epoch,bytes});
+  const bytes=wasm.HEAPU8.slice(ptr,ptr+size).buffer,grid=wasm._daytona_spectator_sound_grid?wasm._daytona_spectator_sound_grid()>>>0:undefined;
+  if(!soundSource(this.room,this.room.id,soundState(bytes),grid))return;this.audioBytes+=size;
+  if(this.room.isHost)this.audioRoute(this.room.id,bytes,grid);else if((this.room.server?.dataChannel?.bufferedAmount||0)<8192)this.send(this.room.server,{type:'spectator-audio-state',epoch:this.room.epoch,bytes,...(grid!==undefined?{grid}:{})});
  }
  async flush(){
   if(this.room.isHost&&!this.soloHostRelay||this.busy||!this.room.active||!this.config||![...this.streams.values()].some(s=>s.begun&&s.conn.open))return;
@@ -145,7 +166,7 @@ export class SpectatorService {
    const wasm=this.getWasm(),ptr=wasm?._daytona_spectator_world_export();if(!ptr)return;
    const raw=wasm.HEAPU8.slice(ptr,ptr+wasm._daytona_spectator_world_size()).buffer,format=typeof CompressionStream==='function'?'deflate':'raw',bytes=await transformPacket(raw,format);
    if(generation!==this.generation)return;
-   for(const [id,s] of this.streams){if(!s.begun||!s.conn.open)continue;if(this.config.settings?.environment==='cycle'){const clock=this.room.environmentState?.()??this.room.environment?.snapshot();if(clock&&clock.run!==s.environmentRun&&this.send(s.conn,{type:'spectator-environment',epoch:this.config.epoch,clock}))s.environmentRun=clock.run;}const sound=this.audioLatest.get(s.audioTarget),audio=s.audioOn&&sound&&performance.now()-sound.at<2000?{source:s.audioTarget,bytes:sound.bytes}:null;if(!this.send(s.conn,{type:'spectator-world',epoch:this.config.epoch,format,bytes,...(audio?{audio}:{})})){this.streams.delete(id);s.conn.close();this.changed();}}
+   for(const [id,s] of this.streams){if(!s.begun||!s.conn.open)continue;if(this.config.settings?.environment==='cycle'){const clock=this.room.environmentState?.()??this.room.environment?.snapshot();if(clock&&clock.run!==s.environmentRun&&this.send(s.conn,{type:'spectator-environment',epoch:this.config.epoch,clock}))s.environmentRun=clock.run;}const sound=this.audioLatest.get(s.audioTarget),audio=s.audioOn&&sound&&performance.now()-sound.at<2000?{source:s.audioTarget,bytes:sound.bytes,...(sound.grid!==undefined?{grid:sound.grid}:{})}:null;if(!this.send(s.conn,{type:'spectator-world',epoch:this.config.epoch,format,bytes,...(audio?{audio}:{})})){this.streams.delete(id);s.conn.close();this.changed();}}
   }catch{this.stopStreams('The spectator relay stopped. Drivers are unaffected.');}finally{this.busy=false;}
  }
  stopStreams(message){this.audioWatches.clear();if(this.room.isHost)this.audioPolicy();this.audioPolicies.clear();this.audioCapture=false;this.getWasm()?._daytona_spectator_sound_capture?.(0);this.audioLatest.clear();this.audioRates.clear();this.generation++;clearInterval(this.timer);this.timer=null;this.sending=false;this.config=null;this.frames=[];this.orders=[];this.frame=null;this.getWasm()?._daytona_spectator_replay?.(0,0);for(const s of this.streams.values()){this.send(s.conn,{type:'spectator-wait',message});s.conn.close();}this.streams.clear();this.tickets.clear();this.changed();}

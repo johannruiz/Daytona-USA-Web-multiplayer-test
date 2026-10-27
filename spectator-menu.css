@@ -26,3 +26,11 @@
 
 
 .spectator-picture #spectatorHUD{position:absolute;left:14px;top:14px;max-width:min(280px,calc(100% - 28px));padding:12px 14px;border:1px solid #74776c80;border-radius:5px;background:#10120ed9;box-shadow:0 3px 15px #0005;pointer-events:none;color:#fff9df;font-size:12px;text-shadow:0 1px 2px #000}.spectator-picture #spectatorHUD[hidden]{display:none}#spectatorHUDName{display:block;font-size:15px;color:#ffe636;overflow-wrap:anywhere}.spectator-hud-facts{display:flex;gap:18px;margin:10px 0}.spectator-hud-facts span{display:grid;gap:3px;font-size:9px;color:#b8bcac;letter-spacing:.09em}.spectator-hud-facts b{font-size:16px;color:#fff;letter-spacing:0}#spectatorHUD #spectatorOrderHeading{font-size:9px;letter-spacing:.08em;padding-top:9px;border-top:1px solid #6f75644d;color:#b8bcac}#spectatorOrder{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:5px}#spectatorOrder li{display:flex;gap:8px;color:var(--spectator-car-color);font-weight:600}#spectatorOrder li>span:first-child{width:15px;text-align:right;color:#e4e8d9}#spectatorOrder .is-followed>span:last-child{text-decoration:underline;text-underline-offset:3px}@media(max-width:700px){.spectator-picture #spectatorHUD{left:8px;top:8px;padding:8px 10px;font-size:10px;max-width:190px}#spectatorHUDName{font-size:12px}.spectator-hud-facts{margin:7px 0;gap:12px}.spectator-hud-facts b{font-size:12px}#spectatorOrder{gap:3px}}
+
+/* Spectators are compact named tags, flowing across the available row. */
+.room-spectators ul{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:7px;flex:1 1 220px;min-width:0;margin:0;padding:0;list-style:none}
+.room-spectators li{display:inline-flex;align-items:center;gap:6px;flex:0 1 auto;min-width:0;max-width:100%;min-height:32px;margin:0;padding:5px 9px;list-style:none;border:1px solid #cecec4;border-radius:4px;background:#fffffb;color:#3c3c34;font-size:11px;line-height:1.4}
+.room-spectators li::marker{content:''}.room-spectators .spectator-name{min-width:0;overflow-wrap:anywhere}
+.room-spectators .remove-spectator{flex:none;margin-left:0}
+@media(max-width:600px){.room-spectators ul{flex-basis:100%}}
+@media(pointer:coarse){.room-spectators .remove-spectator{min-width:44px;min-height:44px}}

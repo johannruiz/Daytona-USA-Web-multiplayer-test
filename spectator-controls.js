@@ -1,13 +1,13 @@
-import {spectatorMarkup,mountSpectatorFullscreen} from './spectator-view.js?v=53.8.24';
-import {mountSpectatorChat} from './spectator-chat.js?v=53.8.24';
-import {parseInvitation} from './room-settings.js?v=53.8.24';
-import {createSpectatorPlayback} from './spectator-playback.js?v=53.8.24';
+import {spectatorMarkup,mountSpectatorFullscreen} from './spectator-view.js?v=53.8.30';
+import {mountSpectatorChat} from './spectator-chat.js?v=53.8.30';
+import {parseInvitation} from './room-settings.js?v=53.8.30';
+import {createSpectatorPlayback} from './spectator-playback.js?v=53.8.30';
 const eye='<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
 const seat='<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h6a2 2 0 0 1 2 2v8H6V5a2 2 0 0 1 2-2ZM6 13h12v4H6zM8 17v4M16 17v4M4 10v7M20 10v7"/></svg>';
 export function spectatorURL(code){parseInvitation(code);const url=new URL('./',location.href);url.hash=new URLSearchParams({room:code}).toString();return url.href;}
 export function mountSpectatorControls(room,{getROM=()=>null,getVolume=()=>1,onRead=()=>{}}={}){
  const $=id=>document.getElementById(id),button=document.createElement('button');button.id='roomRole';button.type='button';button.className='ui-button ui-secondary';button.hidden=true;document.querySelector('.room-actions').insertBefore(button,document.querySelector('.action-spacer'));
- const section=document.createElement('section');section.className='room-spectators';section.hidden=true;section.innerHTML='<div class="section-label"><h3>'+eye+'SPECTATORS</h3><span data-count></span></div><ul aria-label="Spectators"></ul><p data-role-status role="status" aria-live="polite"></p><button id="watchRoom" class="ui-button ui-secondary" type="button">'+eye+'WATCH SESSION</button>';
+ const section=document.createElement('section');section.className='room-spectators';section.hidden=true;section.innerHTML='<div class="section-label"><h3>'+eye+'SPECTATORS</h3><span data-count></span></div><ul aria-label="Spectators" role="list"></ul><p data-role-status role="status" aria-live="polite"></p><button id="watchRoom" class="ui-button ui-secondary" type="button">'+eye+'WATCH SESSION</button>';
  $('roomWorkspace').insertAdjacentElement('afterend',section);
  const dialog=document.createElement('dialog');dialog.id='integratedSpectator';dialog.className='integrated-spectator';dialog.setAttribute('data-menu-popover','');dialog.setAttribute('aria-labelledby','spectatorTitle');dialog.hidden=true;
  dialog.innerHTML=spectatorMarkup();
@@ -33,7 +33,7 @@ export function mountSpectatorControls(room,{getROM=()=>null,getVolume=()=>1,onR
    button.disabled=state.rolePending||state.awaitingStop||(spectating?!openSeat||state.isHost&&rolePhase!=='lobby':(!me&&rolePhase!=='lobby')||observers.length>=8);
    button.title=state.isHost&&spectating&&rolePhase!=='lobby'?'Return everyone to the lobby before taking a host seat.':state.rolePending?'Waiting for host confirmation':spectating?!openSeat?'All seats are occupied. Watch until a driver frees a seat.':rolePhase==='lobby'?'Take the first free seat and confirm Ready.':'Reserve a free seat for the next arcade session.':rolePhase!=='lobby'&&!me?'Return to the lobby before releasing your seat.':me?'Release your next-race reservation and watch now.':'Release your driver seat and watch the race.';
    section.hidden=!observers.length&&!spectating;$('watchRoom').hidden=!spectating;
-   const stamp=JSON.stringify(observers.map(w=>[w.id,w.name,w.connection]));if(stamp!==lastWaiting){lastWaiting=stamp;section.querySelector('ul').replaceChildren(...observers.map(w=>{const li=document.createElement('li');li.textContent=w.name+(w.id===state.id?' · You':'')+(w.id===state.host?' · Host':'')+(w.connection==='reconnecting'?' · Reconnecting':'');if(state.isHost&&w.id!==state.id){const remove=document.createElement('button');remove.type='button';remove.className='remove-spectator';remove.textContent='×';remove.setAttribute('aria-label',`Remove spectator ${w.name}`);remove.onclick=()=>room.kick(w.id);li.append(remove);}return li;}));}
+   const stamp=JSON.stringify(observers.map(w=>[w.id,w.name,w.connection]));if(stamp!==lastWaiting){lastWaiting=stamp;section.querySelector('ul').replaceChildren(...observers.map(w=>{const li=document.createElement('li'),name=document.createElement('span');name.className='spectator-name';name.textContent=w.name+(w.id===state.id?' · You':'')+(w.id===state.host?' · Host':'')+(w.connection==='reconnecting'?' · Reconnecting':'');li.append(name);if(state.isHost&&w.id!==state.id){const remove=document.createElement('button');remove.type='button';remove.className='remove-spectator';remove.textContent='×';remove.setAttribute('aria-label',`Remove spectator ${w.name}`);remove.onclick=()=>room.kick(w.id);li.append(remove);}return li;}));}
    section.querySelector('[data-count]').textContent=String(observers.length);
    const ack=state.lastAck?.action==='set-role'&&!state.lastAck.accepted?state.lastAck.reason:'';section.querySelector('[data-role-status]').textContent=ack;section.querySelector('[data-role-status]').hidden=!ack;
    if(spectating&&!me?.needsApproval)ensurePlayback();

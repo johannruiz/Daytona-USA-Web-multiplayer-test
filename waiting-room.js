@@ -1,18 +1,22 @@
+import {arrivalRoomKey} from './room-arrivals.js?v=53.8.30';
 // Bounded, non-interactive announcement. It never changes menu/focus/game state.
 export function mountWaitingToast(root,{schedule=setTimeout,cancel=clearTimeout}={}){
- let key='',seen=new Set(),timer=null;
+ let key='',timer=null;const home=root.parentElement;
  function hide(){if(timer!==null)cancel(timer);timer=null;root.hidden=true;}
+ function place(){const full=document.fullscreenElement||document.webkitFullscreenElement,parent=full&&full!==document.documentElement?full:document.querySelector('dialog[open]')||home;if(root.parentElement!==parent)parent.append(root);}
+ document.addEventListener('fullscreenchange',place);document.addEventListener('webkitfullscreenchange',place);
  return {sync(state){
-  const next=(state.host||'')+':'+state.id;
-  if(next!==key){key=next;seen=new Set();hide();}
-  const waiting=state.waiting||[],added=waiting.filter(w=>!seen.has(w.id));
-  // Retain IDs for this room, including reconnections; at most eight seats.
-  seen=new Set(waiting.map(w=>w.id));
-  if(!state.isHost||!['playing','preparing'].includes(state.phase)){hide();return;}
-  if(!added.length)return;
+  const next=arrivalRoomKey(state);
+  if(next!==key){key=next;hide();}
+  if(!(['playing','preparing'].includes(state.phase)||state.phase==='waiting'&&['playing','preparing'].includes(state.remotePhase)))hide();
+ },show(event){
+  if(!event.inGame||!['joined','request','spectating','left'].includes(event.kind))return;
+  if(key!==event.roomKey){key=event.roomKey;hide();}
   hide();const title=document.createElement('strong'),detail=document.createElement('span');
-  title.textContent=added.length===1?`${added[0].name} ${added[0].needsApproval?'requested to join':'joined the room'}`:added.some(w=>w.spectator)?`${added.length} people joined the room`:`${added.length} drivers joined the waiting seats`;
-  detail.textContent=added.some(w=>w.needsApproval)?'Review the request when you return to the lobby.':added.every(w=>w.spectator)?'Spectator · no driver seat reserved':'Waiting for the next race · seat reserved';
+  title.textContent=event.name+({request:' requested to join',joined:' joined the room',spectating:' is now spectating',left:' left the room'}[event.kind]);
+  detail.textContent=event.kind==='request'?'Review the request when you return to the lobby.':event.kind==='left'?(event.spectator?'Spectator disconnected':'Driver disconnected'):event.spectator?'Spectator · no driver seat occupied':event.waiting?'Waiting for the next race · seat reserved':'Driver · ready to join the grid';
+  // Native spectator dialogs live in the top layer. Append without focusing.
+  place();
   root.replaceChildren(title,detail);root.hidden=false;timer=schedule(()=>{root.hidden=true;timer=null;},5500);
- },dispose(){hide();seen.clear();}};
+ },dispose(){hide();key='';document.removeEventListener('fullscreenchange',place);document.removeEventListener('webkitfullscreenchange',place);if(root.parentElement!==home)home.append(root);}};
 }

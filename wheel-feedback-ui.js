@@ -1,5 +1,5 @@
-import {WheelForceFeedback,hidIdentity,gamepadHardware} from './wheel-force-feedback.js?v=53.8.24';
-import {mountWebHIDDiagnostics} from './webhid-diagnostics.js?v=53.8.24';
+import {WheelForceFeedback,hidIdentity,gamepadHardware} from './wheel-force-feedback.js?v=53.8.30';
+import {mountWebHIDDiagnostics} from './webhid-diagnostics.js?v=53.8.30';
 
 const PAIRS='daytona-wheel-ffb-bindings-v1';
 function readPairs(storage){
