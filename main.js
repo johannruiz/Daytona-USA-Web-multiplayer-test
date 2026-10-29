@@ -1,40 +1,41 @@
-import {mountWheelFeedback} from './wheel-feedback-ui.js?v=53.8.30';
-import {wheelMayDrive} from './wheel-force-feedback.js?v=53.8.30';
-import {createEnvironment} from './environment.js?v=53.8.30';
-import {SpectatorService,spectatorConfig} from './spectator-service.js?v=53.8.30';
-import {mountSpectatorControls} from './spectator-controls.js?v=53.8.30';
-import {createRoomArrivals} from './room-arrivals.js?v=53.8.30';
-import {createSkinPreviews} from './skin-previews.js?v=53.8.30';
-import {createRoomSystemAlerts} from './room-system-alerts.js?v=53.8.30';
-import {createROMStore,createROMMemory} from './rom-memory.js?v=53.8.30';
-import {mountGameChat} from './game-chat.js?v=53.8.30';
-import {startAnalytics} from './firebase-client.js?v=53.8.30';
-import {LocalRaceReporter,applyNativeOrder} from './race-authority.js?v=53.8.30';
-import {mountRaceStandings} from './race-standings.js?v=53.8.30';
-import {createGamepadHome} from './gamepad-home.js?v=53.8.30';
-import {protectTouchSurface} from './touch-guard.js?v=53.8.30';
-import {createKeyboardControls} from './keyboard-controls.js?v=53.8.30';
-import {SimulationClock} from './simulation-clock.js?v=53.8.30';
-import {SourceTimeline,NativeStateInbox} from './link-timing.js?v=53.8.30';
-import {linkIdForSeat} from './central-link.js?v=53.8.30';
-import {createLobbySound} from './lobby-sound.js?v=53.8.30';
-import { mountDiagnostics } from './diagnostics.js?v=53.8.30';
-import { mountRoomDiagnostics } from './room-diagnostics.js?v=53.8.30';
-import {createControllerControls} from './controller-controls.js?v=53.8.30';
-import { createRenderer } from './renderer.js?v=53.8.30';
-import {mountGraphicsAPISettings} from './graphics-api-settings.js?v=53.8.30';
-import {mountMenuGamepad} from './menu-gamepad.js?v=53.8.30';
-import { restoreNVRAM, STORAGE_ID,usableCabinetEEPROM } from './nvram.js?v=53.8.30';
-import { createTouchControls } from './touch.js?v=53.8.30';
-import { createGamepadRumble } from './haptics.js?v=53.8.30';
-import { loadSettings, saveSettings } from './preferences.js?v=53.8.30';
-import { createWheelControls } from './wheel-controls.js?v=53.8.30';
-import { Multiplayer } from './multiplayer.js?v=53.8.30';
-import { createRoomUI } from './room-ui.js?v=53.8.30';
-import { mountHostConsole } from './host-console.js?v=53.8.30';
-import { raceOptionsMask,prepareCabinet,ensureDeluxeCabinet } from './room-settings.js?v=53.8.30';
-import {prepareSingleCabinet,sameSingleSettings} from './single-player-settings.js?v=53.8.30';
-import {createSinglePlayerUI} from './single-player-ui.js?v=53.8.30';
+import {ArcadeSelection} from './arcade-selection.js?v=53.8.41';
+import {mountWheelFeedback} from './wheel-feedback-ui.js?v=53.8.41';
+import {wheelMayDrive} from './wheel-force-feedback.js?v=53.8.41';
+import {createEnvironment} from './environment.js?v=53.8.41';
+import {SpectatorService,spectatorConfig} from './spectator-service.js?v=53.8.41';
+import {mountSpectatorControls} from './spectator-controls.js?v=53.8.41';
+import {createRoomArrivals} from './room-arrivals.js?v=53.8.41';
+import {createSkinPreviews} from './skin-previews.js?v=53.8.41';
+import {createRoomSystemAlerts} from './room-system-alerts.js?v=53.8.41';
+import {createROMStore,createROMMemory} from './rom-memory.js?v=53.8.41';
+import {mountGameChat} from './game-chat.js?v=53.8.41';
+import {startAnalytics} from './firebase-client.js?v=53.8.41';
+import {LocalRaceReporter,applyNativeOrder} from './race-authority.js?v=53.8.41';
+import {mountRaceStandings} from './race-standings.js?v=53.8.41';
+import {createGamepadHome} from './gamepad-home.js?v=53.8.41';
+import {protectTouchSurface} from './touch-guard.js?v=53.8.41';
+import {createKeyboardControls} from './keyboard-controls.js?v=53.8.41';
+import {SimulationClock} from './simulation-clock.js?v=53.8.41';
+import {SourceTimeline,NativeStateInbox} from './link-timing.js?v=53.8.41';
+import {linkIdForSeat} from './central-link.js?v=53.8.41';
+import {createLobbySound} from './lobby-sound.js?v=53.8.41';
+import { mountDiagnostics } from './diagnostics.js?v=53.8.41';
+import { mountRoomDiagnostics } from './room-diagnostics.js?v=53.8.41';
+import {createControllerControls} from './controller-controls.js?v=53.8.41';
+import { createRenderer } from './renderer.js?v=53.8.41';
+import {mountGraphicsAPISettings} from './graphics-api-settings.js?v=53.8.41';
+import {mountMenuGamepad} from './menu-gamepad.js?v=53.8.41';
+import { restoreNVRAM, STORAGE_ID,usableCabinetEEPROM } from './nvram.js?v=53.8.41';
+import { createTouchControls } from './touch.js?v=53.8.41';
+import { createGamepadRumble } from './haptics.js?v=53.8.41';
+import { loadSettings, saveSettings } from './preferences.js?v=53.8.41';
+import { createWheelControls } from './wheel-controls.js?v=53.8.41';
+import { Multiplayer } from './multiplayer.js?v=53.8.41';
+import { createRoomUI } from './room-ui.js?v=53.8.41';
+import { mountHostConsole } from './host-console.js?v=53.8.41';
+import { raceOptionsMask,prepareCabinet,ensureDeluxeCabinet } from './room-settings.js?v=53.8.41';
+import {prepareSingleCabinet,sameSingleSettings} from './single-player-settings.js?v=53.8.41';
+import {createSinglePlayerUI} from './single-player-ui.js?v=53.8.41';
 // Daytona USA browser host. The wasm module is the original recomp game's
 // native game loop, not a JavaScript reconstruction of Daytona.
 const $ = (id) => document.getElementById(id);
@@ -306,7 +307,7 @@ function pollGamepad() {
   currentGear=value.gear ?? Math.max(1,Math.min(4,currentGear+value.shift));
   return value;
 }
-function inputs() {
+function inputs(selecting=false) {
   wheelInUse=false;
   if(!ui.overlay.hidden)return {steer:0,accel:0,brake:0,gear:currentGear,buttons:0};
   const wheel=wheelControls.read();
@@ -325,7 +326,8 @@ function inputs() {
   wheelInUse=wheel.active&&!keyboard.active&&!phone.steer;
   const buttons=pad.buttons|phone.buttons|keyboard.buttons;
   $('touchGear').textContent=currentGear;
-  return {steer:keyboard.active?keyboard.steer:(phone.steer || pad.steer),
+  const keyboardSteer=selecting?(Number(held.has(keyboardControls.bindings.right))-Number(held.has(keyboardControls.bindings.left)))*100:keyboard.steer;
+  return {steer:keyboard.active?keyboardSteer:(phone.steer || pad.steer),
     accel:Math.max(keyboard.accel,pad.accel,phone.accel),
     brake:Math.max(keyboard.brake,pad.brake,phone.brake),
     gear:currentGear,buttons:room.active?buttons&~12:buttons};
@@ -386,9 +388,12 @@ function updateDevices(now){
   wheelFeedback.refresh();
   controllerControls.update(devices,now,settingsOpen && !$('controllerPanel').hidden,settings.joystickSensitivity,settings.joystickDeadzone);
 }
+const arcadeSelection=new ArcadeSelection();
 function simulateStep(now){
   renderer.prepare(wasm);
-  const i=inputs();
+  const selectionState=wasm._daytona_selection_state?.()||0;
+  const i=inputs(!!selectionState);
+  i.steer=arcadeSelection.read(i.steer,selectionState,FIXED_MS/1000);
   if(diagnostics.collecting)wasm._daytona_probe_reset();
   const stepBegin=performance.now();
   let replayBytes=null;
@@ -645,7 +650,7 @@ async function main() {
     return;
   }
   try{
-    wasm=await factory({locateFile:(path)=>path+'?v=53.8.30'});
+    wasm=await factory({locateFile:(path)=>path+'?v=53.8.41'});
     for(const name of ['_daytona_set_single_skin','_daytona_set_player_skin','_daytona_prepare_visual','_daytona_visual_updates','_daytona_tiles_ptr','_daytona_tiles_versions_ptr','_daytona_tiles_metadata_ptr','_daytona_set_display','_daytona_vertices_ptr','_daytona_vertices_count','_daytona_batches_ptr','_daytona_batches_count','_daytona_background_ptr','_daytona_foreground_ptr','_daytona_tex0_ptr','_daytona_tex1_ptr','_daytona_texture_generation','_daytona_luma_ptr','_daytona_xlat_ptr','_daytona_rumble_strong','_daytona_rumble_weak','_daytona_rumble_centring','_daytona_set_draw_distance','_daytona_draw_distance','_daytona_set_reverse_expert','_daytona_set_reverse_course','_daytona_set_cpu_cars','_daytona_set_race_options','_daytona_link_enable','_daytona_link_receive_ptr','_daytona_link_receive','_daytona_link_tx_ptr','_daytona_link_tx_size','_daytona_link_tx_pop','_daytona_link_state','_daytona_link_id','_daytona_link_count','_daytona_callback_slots','_daytona_link_pending_bytes']) {
       if(typeof wasm[name]!=='function')throw Error('Incomplete engine build: missing '+name+'. Run scripts/build_web.ps1 again.');
     }

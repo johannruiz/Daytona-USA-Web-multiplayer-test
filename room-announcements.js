@@ -2,7 +2,7 @@ export const ROOM_ANNOUNCEMENT_ENDPOINT='https://daytona-discord.sebiches1.worke
 // Optional side effect of a successful public-directory publication. Never
 // awaited by gameplay or Firebase heartbeats; no recurring client timer.
 export function createRoomAnnouncements({endpoint=ROOM_ANNOUNCEMENT_ENDPOINT,fetcher=fetch,
- tokens=async()=>{const sdk=await import('./firebase-client.js?v=53.8.30');return sdk.getConnectionTokens();},
+ tokens=async()=>{const sdk=await import('./firebase-client.js?v=53.8.41');return sdk.getConnectionTokens();},
  setTimer=(fn,ms)=>setTimeout(fn,ms),clearTimer=id=>clearTimeout(id)}={}){
  const entries=new Map();
  async function send(entry,action){

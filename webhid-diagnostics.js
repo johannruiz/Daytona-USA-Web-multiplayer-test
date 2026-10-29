@@ -1,5 +1,5 @@
 // Device report adapted from gareth10203, PR #2.
-import {providerForDevice} from './wheel-force-feedback.js?v=53.8.30';
+import {providerForDevice} from './wheel-force-feedback.js?v=53.8.41';
 
 const hex=value=>`0x${Number(value ?? 0).toString(16).padStart(4,'0')}`;
 

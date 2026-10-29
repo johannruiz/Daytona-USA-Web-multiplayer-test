@@ -1,3 +1,35 @@
+# Daytona USA Web — 53.8.41: host transfer and configurable throttle
+
+This release includes the packaged 53.8.31–53.8.41 updates:
+
+- Voluntary host transfer from the lobby, with compact driver options for
+  Request swap and Make host. Seats, liveries, room chat and spectator roles
+  are preserved; the invitation changes and everyone readies again.
+- Spectator startup and relay recovery improvements, plus mobile menu polish.
+- Circuit and transmission choices stay selected after releasing the wheel,
+  stick or key. Circuit order is Beginner → Advanced → Expert.
+- Single-player initials retain their letter selection and repeat faster
+  when a direction is held.
+- Standard controllers can accelerate proportionally with right stick up.
+  Alternate throttle can be reassigned to a stick direction or an unused button.
+- Keyboard Gradual throttle defaults to Space and can be reassigned. It rises
+  and falls over 1.6 seconds across the full range, without automating a rocket
+  start. The normal accelerator remains available.
+
+Validation: 467 automated checks pass. Targeted Chrome tests cover remapping,
+persistence, controller input preview, sequential circuit selection and two
+linked cabinets entering a race. Controller inputs were simulated; physical
+wheel/controller and wider real-network testing remain useful.
+
+Reload all participants to use this version. The published runtime is checked
+against MANIFEST.sha256. Existing licenses, contributor credits and server-side
+security settings are preserved. No ROM, private credentials or new research
+or test artifacts are included in this publication.
+
+---
+
+## Previous release notes
+
 # Daytona USA Web — 53.8.30: spectator fixes and multiplayer UI polish
 
 This release includes the packaged 53.8.25–53.8.30 updates:

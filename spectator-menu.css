@@ -34,3 +34,16 @@
 .room-spectators .remove-spectator{flex:none;margin-left:0}
 @media(max-width:600px){.room-spectators ul{flex-basis:100%}}
 @media(pointer:coarse){.room-spectators .remove-spectator{min-width:44px;min-height:44px}}
+
+/* On phones the status has its own row so all three header actions stay
+   visible. Narrow selectors get a full row instead of two-character labels. */
+@media(max-width:600px){
+ #menuDialog #integratedSpectator .spectator-room-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+ #menuDialog #integratedSpectator .spectator-brand{grid-column:1;grid-row:1;min-width:0;padding-top:4px}
+ #menuDialog #integratedSpectator .spectator-header-actions{grid-column:2;grid-row:1;padding-top:4px;margin-left:0}
+ #menuDialog #integratedSpectator .spectator-badge{grid-column:1/-1;grid-row:2;justify-self:start}
+}
+@media(max-width:400px){
+ #menuDialog #integratedSpectator .spectator-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #menuDialog #integratedSpectator #spectatorSound{grid-column:1/-1;justify-self:stretch;max-width:none}
+}

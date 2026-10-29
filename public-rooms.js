@@ -1,11 +1,11 @@
-import {BUILD_ID,parseInvitation} from './room-settings.js?v=53.8.30';
+import {BUILD_ID,parseInvitation} from './room-settings.js?v=53.8.41';
 export const ROOM_TTL_MS=90000,ROOM_PULSE_MS=30000;
 export const DIRECTORY_IDLE_MS=5*60*1000;
 const states=new Set(['open','full','starting','racing','reconnecting']);
 export const cleanRoomName=value=>String(value||'').replace(/\s+/gu,' ').trim().slice(0,48);
 export function publicRoomPayload(s){
  if(!s.isHost||s.visibility!=='public'||!s.code||!['lobby','preparing','playing'].includes(s.phase)||!Array.isArray(s.members))return null;
- return {name:cleanRoomName(s.roomName)||'Daytona room',players:s.members.length+(s.waiting||[]).filter(w=>!w.spectator).length,state:s.phase==='playing'?'racing':s.phase==='preparing'?'starting':s.members.some(m=>m.connection==='reconnecting')?'reconnecting':s.members.length+(s.waiting||[]).filter(w=>!w.spectator).length>=8?'full':'open',invite:s.code,version:BUILD_ID};
+ return {name:cleanRoomName(s.roomName)||'Daytona room',players:s.members.length+(s.waiting||[]).filter(w=>!w.spectator).length,state:s.phase==='playing'?'racing':s.phase==='preparing'?'starting':s.hostTransfer||s.members.some(m=>m.connection==='reconnecting')?'reconnecting':s.members.length+(s.waiting||[]).filter(w=>!w.spectator).length>=8?'full':'open',invite:s.code,version:BUILD_ID};
 }
 export function readPublicRooms(value,now){
  if(!value||typeof value!=='object')return [];

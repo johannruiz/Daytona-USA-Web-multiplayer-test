@@ -1,4 +1,4 @@
-import {PLAYER_SKINS,skinOwner} from './player-skins.js?v=53.8.30';
+import {PLAYER_SKINS,skinOwner} from './player-skins.js?v=53.8.41';
 const carIcon='<svg class="skin-car-icon" viewBox="0 0 80 40" aria-hidden="true"><path d="m8 24 5-9 13-3 7-8h21l8 9 9 3 3 13H8Z"/><path d="M30 13h29M36 6l-4 7m19-7 5 7M16 22h7m38 0h8"/><circle cx="23" cy="29" r="6"/><circle cx="60" cy="29" r="6"/></svg>';
 export function mountPlayerSkins({root,room,previews,context='multiplayer',panel=document.getElementById('roomPanel')}){
  const box=document.createElement('dialog');box.className='skin-picker';box.hidden=true;box.dataset.menuPopover='';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.setAttribute('aria-labelledby','skinPickerTitle');
@@ -34,7 +34,7 @@ export function mountPlayerSkins({root,room,previews,context='multiplayer',panel
  }
  let state=null,draft=0,trigger=null,ownerID='',pending=false,message='',lastAck=0,recent=0;
  try{const saved=Number(localStorage.getItem('daytona-player-skin-v1'));if(PLAYER_SKINS[saved])recent=saved;}catch{}
- function available(){return state?.phase==='lobby'&&state.members.some(m=>m.id===state.id)&&!state.awaitingStop;}
+ function available(){return !state?.hostTransfer&&state?.phase==='lobby'&&state.members.some(m=>m.id===state.id)&&!state.awaitingStop;}
  function close(restore=true){if(box.hidden)return false;previewTicket++;previewGate=false;loadingLayer.hidden=true;grid.inert=false;grid.setAttribute('aria-busy','false');previews?.stop();if(box.open)box.close();box.hidden=true;panel.inert=false;pending=false;message='';if(restore&&trigger?.isConnected&&!trigger.disabled&&!trigger.hidden)trigger.focus({preventScroll:true});return true;}
  function render(){
   const me=state?.members.find(m=>m.id===state.id);if(!me)return;

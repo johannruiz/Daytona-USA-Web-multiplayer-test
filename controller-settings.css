@@ -120,3 +120,13 @@
  #settingsModal .settings-header h1 {font-size:20px;}
  #settingsModal .settings-footer {margin-top:6px;padding-top:4px;}
 }
+
+/* Short touch screens need one usable scroll surface, rather than two
+   controller panes reduced to a few pixels by the fixed desktop shell. */
+@media(orientation:landscape) and (max-height:520px){
+ html.mobile-gestures #settingsModal #controllerPanel{overflow:auto;padding-right:5px}
+ html.mobile-gestures #controllerControls{height:auto;min-height:100%}
+ html.mobile-gestures .controller-workspace{flex:none;min-height:360px;height:auto;align-items:stretch}
+ html.mobile-gestures :is(.controller-preview,.controller-binding-panel){overflow:visible}
+ html.mobile-gestures :is(#controllerButtonsPage,#controllerFeelPage){overflow:visible;flex:none}
+}

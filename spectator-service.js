@@ -1,8 +1,8 @@
-import {BUILD_ID} from './room-settings.js?v=53.8.30';
-import {SPECTATOR_VERSION,SPECTATOR_HZ} from './spectator-world.js?v=53.8.30';
-import {transformPacket} from './spectator-codec.js?v=53.8.30';
-import {soundState} from './spectator-audio.js?v=53.8.30';
-import {linkIdForSeat} from './central-link.js?v=53.8.30';
+import {BUILD_ID} from './room-settings.js?v=53.8.41';
+import {SPECTATOR_VERSION,SPECTATOR_HZ} from './spectator-world.js?v=53.8.41';
+import {transformPacket} from './spectator-codec.js?v=53.8.41';
+import {soundState} from './spectator-audio.js?v=53.8.41';
+import {linkIdForSeat} from './central-link.js?v=53.8.41';
 const token=()=>Array.from(crypto.getRandomValues(new Uint8Array(16)),v=>v.toString(16).padStart(2,'0')).join('');
 const name=v=>String(v||'Spectator').replace(/\s+/gu,' ').trim().slice(0,24)||'Spectator';
 const CAP=8,QUEUE=262144;
@@ -20,7 +20,7 @@ export class SpectatorService {
  snapshot(){return {viewers:[...this.viewers.values()].filter(v=>v.conn.open).map(v=>({id:v.conn.peer,name:v.name,approved:v.approved,relay:v.relay,connected:v.conn.open})),streams:this.streams.size};}
  changed(){this.onChange(this.snapshot());}
  reconnect(){return this.room.isHost?this.reassign(this.room.id):this.send(this.room.server,{type:'spectator-reconnect',epoch:this.room.waitEpoch||this.room.epoch});}
- reassign(id){const v=this.viewers.get(id),now=performance.now();if(!this.room.isHost||!v?.approved||!v.conn.open||!['preparing','playing'].includes(this.room.phase)||now-(v.retryAt??-Infinity)<5000)return false;v.retryAt=now;this.revoke(v);this.assignViewers();return true;}
+ reassign(id){const v=this.viewers.get(id),now=performance.now();if(!this.room.isHost||!v?.approved||!v.conn.open||!['preparing','playing'].includes(this.room.phase)||now-(v.retryAt??-Infinity)<5000)return false;v.retryAt=now;v.previousRelay=v.relay;this.revoke(v);this.assignViewers();return true;}
  send(c,d){if(!c?.open||c.dataChannel?.bufferedAmount>QUEUE)return false;try{c.send(d);return true;}catch{return false;}}
  connection(c){
   const meta=c.metadata;if(!['spectator-control','spectator-stream'].includes(meta?.role))return false;
@@ -83,11 +83,12 @@ export class SpectatorService {
   const racing=relays.filter(m=>{const scene=this.room.chatScenes?.get(m.id);return scene>=22&&scene<=29;});
   // A connected cabinet can remain in attract while the others race. Move a
   // waiting feed to an actual racer; never add host upload in a linked room.
-  if(racing.length){relays=racing;for(const v of this.viewers.values())if(v.relay&&!relays.some(m=>m.id===v.relay))this.revoke(v);}
+  if(racing.length)relays=racing;
+  for(const v of this.viewers.values())if(v.relay&&!relays.some(m=>m.id===v.relay))this.revoke(v);
   for(const v of this.viewers.values())if(v.relay)loads.set(v.relay,(loads.get(v.relay)||0)+1);
   for(const v of this.viewers.values()){
    if(v.relay||!v.approved||!v.conn.open)continue;
-   const relay=relays.filter(m=>(loads.get(m.id)||0)<2).sort((a,b)=>(loads.get(a.id)||0)-(loads.get(b.id)||0))[0];
+   const relay=relays.filter(m=>(loads.get(m.id)||0)<2).sort((a,b)=>Number(a.id===v.previousRelay)-Number(b.id===v.previousRelay)||(loads.get(a.id)||0)-(loads.get(b.id)||0))[0];
    if(!relay){this.send(v.conn,{type:'spectator-status',message:'All spectator relays are busy. Waiting for a free relay.'});continue;}
    const ticket=token();loads.set(relay.id,(loads.get(relay.id)||0)+1);v.relay=relay.id;
    if(relay.id===this.room.id)this.tickets.set(v.conn.peer,{ticket,epoch:this.room.epoch,until:performance.now()+60000});
@@ -159,14 +160,16 @@ export class SpectatorService {
   if(!soundSource(this.room,this.room.id,soundState(bytes),grid))return;this.audioBytes+=size;
   if(this.room.isHost)this.audioRoute(this.room.id,bytes,grid);else if((this.room.server?.dataChannel?.bufferedAmount||0)<8192)this.send(this.room.server,{type:'spectator-audio-state',epoch:this.room.epoch,bytes,...(grid!==undefined?{grid}:{})});
  }
+// A busy viewer keeps its channel: skip this snapshot and export a fresh one
+ // after its queue drains. Never accumulate an application-side replay queue.
  async flush(){
-  if(this.room.isHost&&!this.soloHostRelay||this.busy||!this.room.active||!this.config||![...this.streams.values()].some(s=>s.begun&&s.conn.open))return;
+  if(this.room.isHost&&!this.soloHostRelay||this.busy||!this.room.active||!this.config||![...this.streams.values()].some(s=>s.begun&&s.conn.open&&(s.conn.dataChannel?.bufferedAmount||0)<=QUEUE))return;
   this.busy=true;const generation=this.generation;
   try{
    const wasm=this.getWasm(),ptr=wasm?._daytona_spectator_world_export();if(!ptr)return;
    const raw=wasm.HEAPU8.slice(ptr,ptr+wasm._daytona_spectator_world_size()).buffer,format=typeof CompressionStream==='function'?'deflate':'raw',bytes=await transformPacket(raw,format);
    if(generation!==this.generation)return;
-   for(const [id,s] of this.streams){if(!s.begun||!s.conn.open)continue;if(this.config.settings?.environment==='cycle'){const clock=this.room.environmentState?.()??this.room.environment?.snapshot();if(clock&&clock.run!==s.environmentRun&&this.send(s.conn,{type:'spectator-environment',epoch:this.config.epoch,clock}))s.environmentRun=clock.run;}const sound=this.audioLatest.get(s.audioTarget),audio=s.audioOn&&sound&&performance.now()-sound.at<2000?{source:s.audioTarget,bytes:sound.bytes,...(sound.grid!==undefined?{grid:sound.grid}:{})}:null;if(!this.send(s.conn,{type:'spectator-world',epoch:this.config.epoch,format,bytes,...(audio?{audio}:{})})){this.streams.delete(id);s.conn.close();this.changed();}}
+   for(const [id,s] of this.streams){if(!s.begun||!s.conn.open||(s.conn.dataChannel?.bufferedAmount||0)>QUEUE)continue;if(this.config.settings?.environment==='cycle'){const clock=this.room.environmentState?.()??this.room.environment?.snapshot();if(clock&&clock.run!==s.environmentRun&&this.send(s.conn,{type:'spectator-environment',epoch:this.config.epoch,clock}))s.environmentRun=clock.run;}const sound=this.audioLatest.get(s.audioTarget),audio=s.audioOn&&sound&&performance.now()-sound.at<2000?{source:s.audioTarget,bytes:sound.bytes,...(sound.grid!==undefined?{grid:sound.grid}:{})}:null;if(!this.send(s.conn,{type:'spectator-world',epoch:this.config.epoch,format,bytes,...(audio?{audio}:{})})){if(s.conn.open&&(s.conn.dataChannel?.bufferedAmount||0)>QUEUE)continue;this.streams.delete(id);s.conn.close();this.changed();}}
   }catch{this.stopStreams('The spectator relay stopped. Drivers are unaffected.');}finally{this.busy=false;}
  }
  stopStreams(message){this.audioWatches.clear();if(this.room.isHost)this.audioPolicy();this.audioPolicies.clear();this.audioCapture=false;this.getWasm()?._daytona_spectator_sound_capture?.(0);this.audioLatest.clear();this.audioRates.clear();this.generation++;clearInterval(this.timer);this.timer=null;this.sending=false;this.config=null;this.frames=[];this.orders=[];this.frame=null;this.getWasm()?._daytona_spectator_replay?.(0,0);for(const s of this.streams.values()){this.send(s.conn,{type:'spectator-wait',message});s.conn.close();}this.streams.clear();this.tickets.clear();this.changed();}

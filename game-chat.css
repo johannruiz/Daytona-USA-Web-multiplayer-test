@@ -32,3 +32,9 @@
  .game-chat-panel{height:min(220px,calc(100svh - var(--chat-mobile-bottom) - 80px));max-height:none}
  .game-chat.chat-collapsed{bottom:calc(98px + env(safe-area-inset-bottom));width:auto}
 }
+
+@media(pointer:coarse){
+ .game-chat :is(button,input){min-height:44px!important}
+ .game-chat .game-chat-hide{width:44px;height:44px;min-width:44px}
+ .game-chat .chat-form{grid-template-columns:minmax(0,1fr) 44px}
+}

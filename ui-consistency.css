@@ -129,3 +129,31 @@
   appearance:auto;-webkit-appearance:auto;background-image:none;padding-inline-end:12px;
  }
 }
+
+/* Stable menu typography: WebKit must not enlarge individual text blocks on
+   rotation, and titles/controls share the same sans-serif fallback chain. */
+:root{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+#menuDialog{--ui-font:Arial,Helvetica,sans-serif}
+#menuDialog :is(h1,h2,h3,h4,h5,h6,button,input,select,textarea),#gameChat :is(h1,h2,h3,h4,h5,h6,button,input,select,textarea){font-family:var(--ui-font,Arial,Helvetica,sans-serif)!important}
+#menuDialog :is(button,a.ui-button),#gameChat button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+@media(pointer:coarse){
+ #menuDialog :is(button,a.ui-button){min-width:44px;min-height:44px}
+ #menuDialog input[type=range]{min-height:44px}
+ #menuDialog .room-panel .remove-driver{width:44px;min-width:44px}
+ #menuDialog #integratedSpectator :is(.spectator-header-actions .ui-button,#spectatorSound){min-width:44px;min-height:44px!important}
+ #menuDialog #integratedSpectator .spectator-icon-button{width:44px;min-height:44px}
+ #menuDialog #integratedSpectator .spectator-chat-new-anchor button{min-height:44px}
+ #menuDialog #integratedSpectator .spectator-toolbar select{min-height:44px}
+ #menuDialog .skin-picker{padding:max(14px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
+ #menuDialog .skin-picker-card{min-height:0;max-height:100%}
+}
+@media(max-width:760px){#menuDialog .room-panel .driver-card:not(.empty-slot){grid-template-columns:25px minmax(0,1fr) 44px}}
+html.mobile-gestures .launcher,html.mobile-gestures .launcher:has(#settingsModal:not([hidden])){
+ padding:max(14px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
+}
+
+/* Compact desktop/short-window rules also match a phone in landscape. Keep
+   native fields and every action touch-sized in that orientation as well. */
+html.mobile-gestures #menuDialog :is(button,select,textarea,input:not([type=checkbox]):not([type=radio]):not([type=file])){min-height:44px!important}
+html.mobile-gestures #menuDialog :is(button,a.ui-button){min-width:44px!important}
+@media(max-width:380px){#menuDialog #settingsModal .settings-tabs button{flex-direction:column;gap:4px;padding:6px 4px}}
