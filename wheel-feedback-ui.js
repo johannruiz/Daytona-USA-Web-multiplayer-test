@@ -1,5 +1,5 @@
-import {WheelForceFeedback,hidIdentity,gamepadHardware} from './wheel-force-feedback.js?v=53.8.41';
-import {mountWebHIDDiagnostics} from './webhid-diagnostics.js?v=53.8.41';
+import {WheelForceFeedback,hidIdentity,gamepadHardware} from './wheel-force-feedback.js?v=53.8.45';
+import {mountWebHIDDiagnostics} from './webhid-diagnostics.js?v=53.8.45';
 
 const PAIRS='daytona-wheel-ffb-bindings-v1';
 function readPairs(storage){
@@ -7,7 +7,7 @@ function readPairs(storage){
 }
 export function mountWheelFeedback(root,{settings,onSetting,storage,getSelection,getEngineAvailable,canTest,hid=globalThis.navigator?.hid,secure=globalThis.isSecureContext,feedback=null}={}){
   const $=id=>root.querySelector('#'+id),pairs=readPairs(storage);
-  let selected='',paired='',busy=false,testing=false,revision=0,message='',lastView='',nextViewAt=0;
+  let selected='',paired='',busy=false,testing=false,revision=0,message='',lastView='',nextViewAt=0,ledTimer=null;
   const selectionKey=(s=getSelection())=>s?`${s.id}@${s.index??'unresolved'}`:'';
   const ffb=feedback||new WheelForceFeedback({hid,onStatus:status=>{if(status==='Disconnected'){paired='';message='Force device disconnected. Reconnect to use forces.';}render();}});
   const writePairs=()=>{try{storage?.setItem(PAIRS,JSON.stringify(pairs.slice(-24)));}catch{}};
@@ -26,6 +26,7 @@ export function mountWheelFeedback(root,{settings,onSetting,storage,getSelection
   function render(selection=getSelection()){
     const supported=!!hid&&secure,engine=!!getEngineAvailable(),connected=ffb.connected&&paired===selectionKey(selection);
     const ready=connected&&engine&&selection?.connected&&selection.enabled&&selection.calibrated;
+    const g29=connected&&ffb.provider?.constructor.id==='logitech-g29-native-hid';
     const status=busy?(testing?'TESTING':'CONNECTING'):!supported?'UNAVAILABLE':connected?'CONNECTED':'NOT CONNECTED';
     const help=message||(!supported?'Force feedback needs Chrome or Edge on HTTPS or localhost. Wheel inputs remain available.':!engine?'Load your ROM to make arcade steering forces available.':!selection?'Choose your steering wheel in Input & calibration first.':!selection.connected?'Press a wheel button to reconnect its input.':!connected?'Connect the same physical wheel as your steering input. Forces start at 20%.':!selection.enabled||!selection.calibrated?'Finish steering calibration and enable wheel input to use forces in a race.':'Forces run only while driving with this wheel. Menus and loss of focus stop them.');
     const view=JSON.stringify([selection?.name,ffb.label,status,ready,busy,help,settings.forceFeedbackEnabled,settings.forceFeedbackStrength,settings.forceFeedbackReverse,!!canTest()]);
@@ -37,7 +38,10 @@ export function mountWheelFeedback(root,{settings,onSetting,storage,getSelection
     $('wheelForceEnabled').checked=settings.forceFeedbackEnabled;$('wheelForceEnabled').disabled=!connected||!engine;
     $('wheelForceStrength').value=Math.round(settings.forceFeedbackStrength*100);$('wheelForceStrengthValue').textContent=Math.round(settings.forceFeedbackStrength*100)+'%';
     $('wheelForceStrength').disabled=!connected;$('wheelForceReverse').checked=settings.forceFeedbackReverse;$('wheelForceReverse').disabled=!connected;
-    $('wheelForceTest').disabled=busy||!ready||!settings.forceFeedbackEnabled||!settings.forceFeedbackStrength||!canTest();
+    $('wheelForceTest').disabled=busy||!(g29?connected&&selection?.connected:ready)||!settings.forceFeedbackEnabled||!settings.forceFeedbackStrength||!canTest();
+    $('wheelForceTest').textContent=g29?'Test effect':'Test left pull';
+    for(const id of ['wheelG29TestOptions','wheelG29Setup'])if($(id))$(id).hidden=!g29;
+    for(const id of ['wheelG29Effect','wheelG29Range','wheelG29ApplyRange','wheelG29LEDs'])if($(id))$(id).disabled=busy||!g29||!canTest();
     $('wheelForceStop').disabled=!connected;$('wheelForceHelp').textContent=help;
     $('wheelForceProvider').textContent=connected?ffb.label:'Supported protocols: standard HID PID, native T300, Logitech G29 and the T300 WebHID v2 bridge. Device access depends on browser and driver support.';
   }
@@ -66,16 +70,27 @@ export function mountWheelFeedback(root,{settings,onSetting,storage,getSelection
   $('wheelForceStop').addEventListener('click',()=>{stop();onSetting('forceFeedbackEnabled',false);sync();say('Forces stopped. Turn on Use force feedback to resume.');});
   $('wheelForceTest').addEventListener('click',async()=>{
     if($('wheelForceTest').disabled||!canTest())return;
-    busy=true;testing=true;say('Brief left pull…');
-    try{const complete=await ffb.testLeft({duration:280,maxStrength:.2});say(complete?'Test finished. Adjust gain gently; reverse direction only if needed.':'Test stopped. No force is being applied.');}
+    const g29=ffb.provider?.constructor.id==='logitech-g29-native-hid',effect=g29?$('wheelG29Effect').value:'left';
+    busy=true;testing=true;say('Testing '+(g29?$('wheelG29Effect').selectedOptions[0].textContent.toLowerCase():'left pull')+'…');
+    try{const complete=await ffb.testEffect(effect,{duration:effect==='rumble'?600:400,maxStrength:.2});say(complete?'Test finished. Adjust gain gently; reverse direction only if needed.':'Test stopped. No force is being applied.');}
     catch(error){say(String(error?.message||error));}finally{busy=false;testing=false;render();}
   });
+  async function configureG29(action){
+    if(busy||!canTest()||ffb.provider?.constructor.id!=='logitech-g29-native-hid')return;
+    const provider=ffb.provider;busy=true;render();
+    try{ffb.stop({force:true});await ffb.flush();if(ffb.provider!==provider)return;
+      if(action==='range'){await provider.setRange(Number($('wheelG29Range').value));say('Steering range applied. Check your input calibration.');}
+      else{clearTimeout(ledTimer);await provider.setLeds(31);ledTimer=setTimeout(()=>{ledTimer=null;if(provider.opened)void provider.setLeds(0).catch(()=>{});},600);say('Shift LED test. No steering force applied.');}
+    }catch(error){say(String(error?.message||error));}finally{busy=false;render();}
+  }
+  $('wheelG29ApplyRange')?.addEventListener('click',()=>configureG29('range'));
+  $('wheelG29LEDs')?.addEventListener('click',()=>configureG29('leds'));
   const diagnostics=mountWebHIDDiagnostics(root,{hid,secure});
   refresh();sync();
   return {sync,refresh,stop,
     resetPairing(){stop();pairs.splice(0,pairs.length);writePairs();paired='';revision++;void ffb.disconnect().catch(()=>{});onSetting('forceFeedbackEnabled',false);say('Wheel profile and force pairing cleared.');},
     drive(state,now,allowed){if(!allowed||!ffb.connected||!ffb.enabled){ffb.stop();return false;}const selection=getSelection();if(!selection?.active||paired!==selectionKey(selection)){ffb.stop();return false;}return ffb.update(state,now);},
     state:()=>({connected:ffb.connected,paired,enabled:ffb.enabled,testing:ffb.testing}),
-    destroy(){revision++;ffb.destroy();diagnostics.clear();}
+    destroy(){revision++;clearTimeout(ledTimer);if(ffb.provider?.setLeds)void ffb.provider.setLeds(0).catch(()=>{});ffb.destroy();diagnostics.clear();}
   };
 }

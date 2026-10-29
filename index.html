@@ -3,22 +3,22 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#05070b"><title>Daytona USA · Private Multiplayer</title>
-  <link rel="stylesheet" href="style.css?v=53.8.41">
-  <link rel="stylesheet" href="host-console.css?v=53.8.41">
-  <link rel="stylesheet" href="controller-settings.css?v=53.8.41">
-  <link rel="stylesheet" href="input-settings.css?v=53.8.41">
-  <link rel="stylesheet" href="wheel-feedback.css?v=53.8.41">
-  <link rel="stylesheet" href="single-player.css?v=53.8.41">
-  <link rel="stylesheet" href="ui-consistency.css?v=53.8.41">
-  <link rel="stylesheet" href="menu-gamepad.css?v=53.8.41">
-  <link rel="stylesheet" href="race-standings.css?v=53.8.41">
-  <link rel="stylesheet" href="public-rooms.css?v=53.8.41">
-  <link rel="stylesheet" href="waiting-room.css?v=53.8.41">
-  <link rel="stylesheet" href="game-chat.css?v=53.8.41">
-  <link rel="stylesheet" href="lobby-layout.css?v=53.8.41">
-  <link rel="stylesheet" href="player-skins.css?v=53.8.41">
-  <link rel="stylesheet" href="spectator-menu.css?v=53.8.41">
-  <link rel="stylesheet" href="ui-motion.css?v=53.8.41">
+  <link rel="stylesheet" href="style.css?v=53.8.45">
+  <link rel="stylesheet" href="host-console.css?v=53.8.45">
+  <link rel="stylesheet" href="controller-settings.css?v=53.8.45">
+  <link rel="stylesheet" href="input-settings.css?v=53.8.45">
+  <link rel="stylesheet" href="wheel-feedback.css?v=53.8.45">
+  <link rel="stylesheet" href="single-player.css?v=53.8.45">
+  <link rel="stylesheet" href="ui-consistency.css?v=53.8.45">
+  <link rel="stylesheet" href="menu-gamepad.css?v=53.8.45">
+  <link rel="stylesheet" href="race-standings.css?v=53.8.45">
+  <link rel="stylesheet" href="public-rooms.css?v=53.8.45">
+  <link rel="stylesheet" href="waiting-room.css?v=53.8.45">
+  <link rel="stylesheet" href="game-chat.css?v=53.8.45">
+  <link rel="stylesheet" href="lobby-layout.css?v=53.8.45">
+  <link rel="stylesheet" href="player-skins.css?v=53.8.45">
+  <link rel="stylesheet" href="spectator-menu.css?v=53.8.45">
+  <link rel="stylesheet" href="ui-motion.css?v=53.8.45">
 </head>
 <body>
   <main class="arcade" aria-label="Daytona USA arcade">
@@ -38,6 +38,7 @@
         <div class="touch-actions"><button data-action="coin">COIN</button><button data-action="start">START</button><button data-action="camera" aria-label="Cycle camera view">VIEW</button><button data-settings aria-label="Show arcade settings controls">⋯</button></div>
       </div>
       <div class="touch-service" hidden><button data-action="test">F2</button><button data-action="service">SERVICE</button><button data-action="previous">↑</button><button data-action="next">↓</button><button data-action="value">CHANGE</button></div>
+      <div class="touch-launch-throttle" data-launch-throttle role="slider" tabindex="0" aria-label="Start throttle. Slide up to accelerate." aria-orientation="vertical" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span class="launch-throttle-label">GAS</span><span class="launch-throttle-track"><i></i><b></b></span><output aria-hidden="true">0%</output></div>
       <div class="steering-pad" data-steering role="group" aria-label="Drag left or right to steer"><span>‹</span><span class="steering-knob">↔</span><span>›</span></div>
       <div class="touch-gears"><button data-action="down" aria-label="Shift down">−</button><span id="touchGear">1</span><button data-action="up" aria-label="Shift up">+</button></div>
       <div class="touch-pedals"><button data-action="brake">BRAKE</button><button data-action="gas">GAS</button></div>
@@ -223,7 +224,9 @@
               <label class="setting-toggle"><span>Use force feedback<small>Only while driving with this wheel.</small></span><input id="wheelForceEnabled" type="checkbox" disabled></label>
               <div class="setting-slider"><div><label for="wheelForceStrength">Force gain</label><output id="wheelForceStrengthValue" for="wheelForceStrength">20%</output></div><input id="wheelForceStrength" type="range" min="0" max="100" step="5" value="20" disabled></div>
               <label class="wheel-force-reverse"><input id="wheelForceReverse" type="checkbox" disabled>Reverse force direction</label>
+              <div id="wheelG29TestOptions" class="wheel-g29-test" hidden><label for="wheelG29Effect">G29 effect test</label><select id="wheelG29Effect"><option value="left">Left pull</option><option value="right">Right pull</option><option value="rumble">Alternating vibration</option><option value="damper">Resistance</option><option value="center">Auto-centre</option></select><p>Brief tests at up to 20% gain. Vibration alternates steering torque; the G29 has no separate rumble motors.</p></div>
               <div class="wheel-force-actions"><button id="wheelForceTest" type="button" class="ui-button ui-secondary" disabled>Test left pull</button><button id="wheelForceStop" type="button" class="ui-button ui-secondary" disabled>Stop forces</button></div>
+              <details id="wheelG29Setup" class="wheel-force-compat" hidden><summary>G29 device setup</summary><label for="wheelG29Range">Physical steering range</label><div class="wheel-g29-range"><select id="wheelG29Range"><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option><option value="360">360°</option><option value="540">540°</option><option value="720">720°</option><option value="900" selected>900°</option></select><button id="wheelG29ApplyRange" type="button" class="ui-button ui-secondary">Apply range</button></div><button id="wheelG29LEDs" type="button" class="ui-button ui-secondary">Test shift LEDs</button><p>Range changes only when you apply it. Check steering calibration afterwards. LEDs turn off after a brief test.</p></details>
               <p id="wheelForceHelp" role="status">Choose a wheel first.</p>
               <details class="wheel-force-compat"><summary>Compatibility &amp; device report</summary><p id="wheelForceProvider"></p><button id="webhidInspect" type="button" class="ui-button ui-secondary">Download HID report</button><p id="webhidStatus" role="status"></p><p>Inspects device support without moving the wheel. No data is uploaded.</p></details>
             </aside>
@@ -260,9 +263,9 @@
       </section>
     </div>
   </div>
-  <small id="buildVersion" class="build-version"><span>v53.8.41</span> · <time datetime="2026-10-29">29.10.26</time></small>
+  <small id="buildVersion" class="build-version"><span>v53.8.45</span> · <time datetime="2026-10-29">29.10.26</time></small>
   <div id="menuGamepadHints" class="menu-gamepad-hints" role="status" aria-label="Controller menu controls" hidden></div>
-  <script src="vendor/peerjs.min.js?v=53.8.41" defer></script><script src="daytona_engine.js?v=53.8.41" defer></script><script type="module" src="main.js?v=53.8.41"></script>
+  <script src="vendor/peerjs.min.js?v=53.8.45" defer></script><script src="daytona_engine.js?v=53.8.45" defer></script><script type="module" src="main.js?v=53.8.45"></script>
 </body>
 </html>
 

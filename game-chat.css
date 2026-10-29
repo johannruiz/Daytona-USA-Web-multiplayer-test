@@ -15,26 +15,31 @@
 .chat-new-anchor{position:absolute;inset:auto 8px 4px;display:flex;justify-content:center;pointer-events:none}
 #menuDialog .room-panel .chat-new-anchor .new-messages{position:static;transform:none;pointer-events:auto;min-width:148px;max-width:100%}
 #menuDialog .room-panel .chat-new-anchor .new-messages:is(:hover,:active,:focus-visible){transform:none}
+/* Compact desktop windows retain a bounded floating panel. */
+@media(max-height:500px){
+ .game-chat{bottom:max(8px,env(safe-area-inset-bottom));right:max(8px,env(safe-area-inset-right));width:min(300px,calc(100vw - 16px))}
+ .game-chat-panel{height:240px;max-height:calc(100dvh - 24px);padding:9px}.game-chat .chat-message{padding:5px 0}
+}
+/* The collapsed shortcut clears the gears; the open conversation overlays them. */
 @media(pointer:coarse){
- .game-chat{--chat-mobile-bottom:calc(max(180px,178px * var(--touch-button-scale,1)) + env(safe-area-inset-bottom));bottom:var(--chat-mobile-bottom);right:max(12px,env(safe-area-inset-right));width:min(320px,calc(100vw - 24px))}
- .game-chat-panel{height:min(270px,43svh);max-height:calc(100svh - var(--chat-mobile-bottom) - 80px)}
- .game-chat input{font-size:16px}.game-chat-hide{width:38px;height:34px}
- .game-chat.chat-collapsed{left:max(18px,env(safe-area-inset-left));right:auto;bottom:calc(110px + env(safe-area-inset-bottom));width:auto}
+ .game-chat{--chat-mobile-bottom:calc(max(180px,178px * var(--touch-button-scale,1)) + env(safe-area-inset-bottom));left:auto;right:max(12px,env(safe-area-inset-right));width:min(440px,calc(100vw - max(12px,env(safe-area-inset-left)) - max(12px,env(safe-area-inset-right))))}
+ .game-chat:not(.chat-collapsed){top:calc(var(--chat-panel-top,12px) + env(safe-area-inset-top));bottom:auto;height:calc(var(--chat-panel-height,min(460px,calc(100dvh - 24px))) - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+ .game-chat-panel{box-sizing:border-box;height:100%;max-height:none;min-height:0;padding:12px;background:rgba(250,249,241,.94)}
+ .game-chat .chat-heading,.game-chat .chat-form,.game-chat-feedback{flex-shrink:0}
+ .game-chat .chat-heading{min-height:44px}.game-chat-scroll{min-height:0;margin:4px 0 10px}
+ .game-chat input{font-size:16px}.game-chat :is(button,input){min-height:44px!important}
+ .game-chat .game-chat-hide{width:44px;height:44px;min-width:44px}
+ .game-chat .chat-form{grid-template-columns:minmax(0,1fr) 44px}
+ .game-chat-feedback{min-height:0;margin:6px 0 0}
+ .game-chat.chat-short-viewport:not(.chat-collapsed){top:var(--chat-panel-top);height:var(--chat-panel-height)}
+ .game-chat.chat-short-viewport .game-chat-panel{padding:8px}
+ .game-chat.chat-short-viewport .game-chat-feedback{display:none}
+ .game-chat.chat-short-viewport .chat-heading{padding-bottom:4px}
+ .game-chat.chat-short-viewport .game-chat-scroll{margin:0 0 6px}
+ .game-chat.chat-collapsed{top:auto;left:auto;right:max(18px,env(safe-area-inset-right));bottom:var(--chat-mobile-bottom);height:auto;width:auto}
  .game-chat-toggle{float:none;min-height:44px;gap:6px;padding:7px 10px;font-size:10px!important;border-radius:5px}
  .game-chat-toggle .ui-icon{width:16px;height:16px}.game-chat-toggle .unread-badge{min-width:18px;min-height:18px;font-size:10px}
 }
-@media(max-height:500px){
- .game-chat{bottom:max(8px,env(safe-area-inset-bottom));right:max(8px,env(safe-area-inset-right));width:min(300px,calc(100vw - 16px))}
- .game-chat-panel{height:240px;max-height:calc(100svh - 24px);padding:9px}.game-chat .chat-message{padding:5px 0}
-}
 @media(pointer:coarse) and (max-height:500px){
- .game-chat{--chat-mobile-bottom:calc(100px + env(safe-area-inset-bottom));left:max(12px,env(safe-area-inset-left));right:auto;bottom:var(--chat-mobile-bottom);width:min(300px,calc(100vw - max(180px,150px * var(--touch-button-scale,1)) - 40px))}
- .game-chat-panel{height:min(220px,calc(100svh - var(--chat-mobile-bottom) - 80px));max-height:none}
- .game-chat.chat-collapsed{bottom:calc(98px + env(safe-area-inset-bottom));width:auto}
-}
-
-@media(pointer:coarse){
- .game-chat :is(button,input){min-height:44px!important}
- .game-chat .game-chat-hide{width:44px;height:44px;min-width:44px}
- .game-chat .chat-form{grid-template-columns:minmax(0,1fr) 44px}
+ .game-chat{--chat-mobile-bottom:calc(max(166px,164px * var(--touch-button-scale,1)) + env(safe-area-inset-bottom))}
 }

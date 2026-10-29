@@ -1,6 +1,6 @@
 // Detection/reset improvements adapted from gareth10203, PR #2.
 import {WHEEL_ACTIONS,newWheelProfile,loadWheelProfiles,saveWheelProfiles,sanitizeBinding,bindingDevice,rawInput,
-  steeringCalibrated,pedalCalibrated,wheelSteering,wheelPedal,readWheel,snapshotDevices,detectBinding,bindingPressed} from './wheel.js?v=53.8.41';
+  steeringCalibrated,pedalCalibrated,wheelSteering,wheelPedal,readWheel,snapshotDevices,detectBinding,bindingPressed} from './wheel.js?v=53.8.45';
 
 export function createWheelControls(root,{storage,getPads,onChange=()=>{},onDevice=()=>{},onReset=()=>{},deviceActions=[],hardware=null}) {
   const saved=loadWheelProfiles(storage),rows=new Map();

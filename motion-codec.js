@@ -1,6 +1,6 @@
 // Self-contained snapshots only. Never encode room commands or final results here.
-import {SAMPLE_BYTES,COMPACT_STATE_TAG} from './central-link.js?v=53.8.41';
-import {normalizeSlotTiming} from './link-timing.js?v=53.8.41';
+import {SAMPLE_BYTES,COMPACT_STATE_TAG} from './central-link.js?v=53.8.45';
+import {normalizeSlotTiming} from './link-timing.js?v=53.8.45';
 const MAGIC=0x314d5444,HEADER=96,MAX_BYTES=4096;
 const integer=n=>Number.isSafeInteger(n)&&n>=0;
 const finite=n=>typeof n==='number'&&Number.isFinite(n)&&n>=0;

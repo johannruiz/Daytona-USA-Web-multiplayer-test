@@ -1,5 +1,7 @@
 // WebHID providers adapted from gareth10203, PR #2, commit 77149347ec286154867896137f5eee15371a259b.
 // Integrated with explicit device pairing and gameplay suspension.
+// G29 protocol parity: https://github.com/johannruiz/testg29 (index.html blob
+// ef907195a3eb9ee35c1a031d77bb4ee9584d3032), based on nondebug/g29-wheel-demo.
 // macOS G29 report support: gareth10203, PR #3, commit 48ca11d1e38fb2b40d92c210998dbd7224f1ab8d.
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number.isFinite(value)?value:0));
 
@@ -39,10 +41,8 @@ function flattenCollections(collections,result=[]){for(const collection of colle
 function deviceReports(device,kind){return flattenCollections(device?.collections).flatMap(collection=>collection[kind]??[]);}
 function reportSize(report){return Math.ceil((report?.items??[]).reduce((bits,item)=>bits+(Number(item.reportSize)||0)*(Number(item.reportCount)||0),0)/8);}
 function logitechG29OutputReport(device){
-  return flattenCollections(device?.collections)
-    .filter(collection=>collection.usagePage===GENERIC_DESKTOP_PAGE&&collection.usage===0x04)
-    .flatMap(collection=>collection.outputReports??[])
-    .find(report=>report.reportId===LOGITECH_REPORT_ID&&reportSize(report)>=LOGITECH_COMMAND_SIZE)||null;
+  // Windows may expose the native report outside the joystick collection.
+  return deviceReports(device,'outputReports').find(report=>report.reportId===LOGITECH_REPORT_ID&&reportSize(report)>=LOGITECH_COMMAND_SIZE)||null;
 }
 function fields(report){
   let offset=0;const result=[];
@@ -231,7 +231,7 @@ export class T300NativeHIDProvider {
 export class LogitechG29HIDProvider {
   static id='logitech-g29-native-hid';
   static label='Logitech G29 native FFB';
-  static filters=[...LOGITECH_G29_PRODUCT_IDS].map(productId=>({vendorId:LOGITECH_VENDOR_ID,productId,usagePage:GENERIC_DESKTOP_PAGE,usage:0x04}));
+  static filters=[...LOGITECH_G29_PRODUCT_IDS].map(productId=>({vendorId:LOGITECH_VENDOR_ID,productId}));
   static supports(device){
     if(device?.vendorId!==LOGITECH_VENDOR_ID||!LOGITECH_G29_PRODUCT_IDS.has(device?.productId))return false;
     if(device?.productName==='T300 Native FFB Compatibility Bridge')return false;
@@ -239,17 +239,31 @@ export class LogitechG29HIDProvider {
     // 046d:c24f is also used by a T300 compatibility bridge. Native Logitech
     // descriptors use seven bytes; accept a padded descriptor only when the
     // browser identifies it as a G29, as Chrome on macOS does (16 bytes).
-    return Boolean(report)&&(size===LOGITECH_COMMAND_SIZE||device.productId!==0xc24f||/\bG29\b/i.test(String(device.productName||'')));
+    return report?(size===LOGITECH_COMMAND_SIZE||device.productId!==0xc24f||/\bG29\b/i.test(String(device.productName||''))):deviceReports(device,'outputReports').length===0&&/\bG29\b/i.test(String(device.productName||''));
   }
 
   constructor(device,{schedule=globalThis.setTimeout,cancel=globalThis.clearTimeout}={}){
-    this.device=device;this.schedule=schedule;this.cancel=cancel;this.expiry=null;this.active=null;
+    // Window timers must not receive this provider as their WebIDL receiver.
+    this.device=device;this.schedule=(...args)=>schedule?.(...args);this.cancel=(...args)=>cancel?.(...args);this.expiry=null;this.active=null;this.oscillator=null;this.generation=0;this.queue=Promise.resolve();
     this.outputReport=logitechG29OutputReport(device);this.packetSize=reportSize(this.outputReport)||LOGITECH_COMMAND_SIZE;
   }
   get label(){return this.device?.productName||this.constructor.label;}
   get opened(){return Boolean(this.device?.opened);}
   packet(...values){const packet=new Uint8Array(this.packetSize);packet.set(values.slice(0,LOGITECH_COMMAND_SIZE));return packet;}
-  async send(...values){await this.device.sendReport(LOGITECH_REPORT_ID,this.packet(...values));}
+  async send(...values){
+    const bytes=this.packet(...values),device=this.device;
+    const next=this.queue.catch(()=>{}).then(()=>{if(!device.opened)throw new Error('G29 disconnected.');return device.sendReport(LOGITECH_REPORT_ID,bytes);});
+    this.queue=next;await next;
+  }
+  cancelOscillator(){this.generation++;if(this.oscillator!==null)this.cancel?.(this.oscillator);this.oscillator=null;}
+  async clearEffects(){
+    // Same slot reset as johannruiz/testg29; also disables firmware centring.
+    for(let slot=0;slot<4;slot++)await this.send((0x10<<slot)|3,0x10);
+    await this.send(0xf5);
+  }
+  async setRange(degrees){const n=Math.round(clamp(degrees,90,900));await this.send(0xf8,0x81,n&255,n>>8);}
+  async setLeds(mask){await this.send(0xf8,0x12,Math.round(clamp(mask,0,31)));}
+
   clearExpiry(){if(this.expiry!==null)this.cancel?.(this.expiry);this.expiry=null;}
   arm(duration){
     this.clearExpiry();
@@ -258,32 +272,51 @@ export class LogitechG29HIDProvider {
   async open(){
     if(!this.device.opened)await this.device.open();
     await this.stop();
-    // Do not let the wheel's firmware centring spring compete with game FFB.
-    await this.send(0xf5);
   }
   async constant(force,{duration=120}={}){
+    this.cancelOscillator();
     const level=clamp(force,-1,1);if(Math.abs(level)<.002){await this.stop();return;}
     if(this.active&&this.active!=='constant')await this.stop();
     // 0x08 is the G29 constant-force command; 0x00 is full left and 0xff full right.
-    await this.send(0x11,0x08,Math.round((level+1)*127.5));this.active='constant';this.arm(duration);
+    const token=this.generation;await this.send(0x11,0x08,Math.round((level+1)*127.5));if(token===this.generation){this.active='constant';this.arm(duration);}
   }
   async damper(strength,{duration=120}={}){
+    this.cancelOscillator();
     const level=clamp(strength,0,1);if(level<.002){await this.stop();return;}
     if(this.active&&this.active!=='damper')await this.stop();
     const update=this.active==='damper',clip=Math.round(level*255);
     // Slot two keeps resistance separate from constant force. Positive symmetric
     // coefficients oppose motion in either direction; clip controls its strength.
-    await this.send(update?0x2c:0x21,0x0c,0x0f,0,0x0f,0,clip);this.active='damper';this.arm(duration);
+    const token=this.generation;await this.send(update?0x2c:0x21,0x0c,0x0f,0,0x0f,0,clip);if(token===this.generation){this.active='damper';this.arm(duration);}
+  }
+  async center(strength,{duration=120}={}){
+    const token=this.generation+1;await this.stop();const level=clamp(strength,0,1);if(level<.002||token!==this.generation)return;
+    const value=level*0xffff;
+    let a=value<=0xaaaa?0x0c*value:0x0c*0xaaaa+0x06*(value-0xaaaa);
+    let b=value<=0xaaaa?0x80*value:0x80*0xaaaa+0xff*(value-0xaaaa);
+    a=Math.round(clamp(a/0xaaaa,0,255));b=Math.round(clamp(b/0xaaaa,0,255));
+    await this.send(0xfe,0x0d,a,a,b);if(token!==this.generation)return;await this.send(0x14);if(token===this.generation){this.active='center';this.arm(duration);}
+  }
+  async rumble(strength,{duration=120}={}){
+    const token=this.generation+1;await this.stop();const level=clamp(strength,0,1);if(level<.002||token!==this.generation)return;
+    this.active='rumble';let direction=-1;
+    const tick=async()=>{
+      if(token!==this.generation||!this.device.opened)return;
+      await this.send(0x11,0x08,Math.round((direction*level+1)*127.5));direction=-direction;
+      if(token===this.generation)this.oscillator=this.schedule?.(()=>{this.oscillator=null;void tick().catch(()=>this.stop().catch(()=>{}));},20)??null;
+    };
+    await tick();if(token===this.generation&&this.device.opened)this.arm(duration);
   }
   async stop(){
-    this.clearExpiry();this.active=null;
-    if(this.device.opened)await this.send(0xf3);
+    this.cancelOscillator();this.clearExpiry();this.active=null;
+    if(this.device.opened)await this.clearEffects();
   }
   async close(){
-    this.clearExpiry();
+    this.cancelOscillator();this.clearExpiry();
     if(!this.device.opened)return;
-    try{await this.stop();await this.send(0xf5);}finally{await this.device.close?.();}
+    try{await this.stop();await this.setLeds(0);}finally{await this.device.close?.();}
   }
+
 }
 
 export class StandardHIDPIDProvider {
@@ -482,7 +515,9 @@ export class WheelForceFeedback {
     const devices=await this.hid.requestDevice({filters});
     if(generation!==this.connectionGeneration)return null;
     if(devices?.[0]&&!acceptsWheel(inputId,devices[0]))throw new Error('Choose the same physical wheel as the selected steering input.');
-    return devices?.[0]?this.useDevice(devices[0]):null;
+    const compatible=devices?.filter(d=>acceptsWheel(inputId,d)&&providerForDevice(d,this.providers))||[];
+    const device=compatible.find(d=>logitechG29OutputReport(d))||compatible[0]||devices?.[0];
+    return device?this.useDevice(device):null;
   }
   update({force=0,resistance=0}={},now=performance.now()){
     if(this.testing)return true;
@@ -505,7 +540,9 @@ export class WheelForceFeedback {
       try{
         if(action.kind==='stop')await this.provider.stop();
         else if(action.kind==='constant')await this.provider.constant(action.level,{duration:action.duration??120});
-        else await this.provider.damper(action.level,{duration:120});
+        else if(action.kind==='damper')await this.provider.damper(action.level,{duration:action.duration??120});
+        else if(['rumble','center'].includes(action.kind)&&typeof this.provider[action.kind]==='function')await this.provider[action.kind](action.level,{duration:action.duration??120});
+        else throw new Error('This wheel does not support this test.');
       }catch(error){
         const failed=this.provider;this.provider=null;this.pending=null;this.effectActive=false;
         try{await failed?.close();}catch{}
@@ -522,15 +559,20 @@ export class WheelForceFeedback {
     this.effectActive=false;this.lastKind='stop';this.lastLevel=0;this.pending={kind:'stop'};if(!this.inFlight)void this.pump();
   }
   async flush(){while(this.inFlight||this.pending)await new Promise(resolve=>setTimeout(resolve,0));}
-  async testLeft({duration=280,maxStrength=.6}={}){
+  testLeft(options={}){return this.testEffect('left',options);}
+  async testEffect(effect='left',{duration=280,maxStrength=.6}={}){
     if(!this.connected)throw new Error('Connect force feedback before testing it.');
-    const level=Math.min(this.strength,clamp(maxStrength,0,1))*(this.reverse?1:-1);
+    if(!['left','right','rumble','damper','center'].includes(effect))throw new Error('Unknown force test.');
+    if(['rumble','center'].includes(effect)&&typeof this.provider[effect]!=='function')throw new Error('This wheel does not support this test.');
+    duration=Math.round(clamp(duration,40,1000));
+    const kind=['left','right'].includes(effect)?'constant':effect;
+    const level=Math.min(this.strength,clamp(maxStrength,0,1))*(kind==='constant'?(effect==='left'?-1:1)*(this.reverse?-1:1):1);
     if(Math.abs(level)<.002)return false;
     const token=++this.testGeneration,provider=this.provider;this.testing=true;this.pending={kind:'stop'};if(!this.inFlight)void this.pump();await this.flush();
     let failed=null,completed=false;
     try{
       if(token!==this.testGeneration||provider!==this.provider)return false;
-      this.effectActive=true;this.schedule({kind:'constant',level,duration});await this.flush();
+      this.effectActive=true;this.schedule({kind,level,duration});await this.flush();
       if(token!==this.testGeneration||provider!==this.provider)return false;
       await this.wait(duration);
       completed=token===this.testGeneration&&provider===this.provider;

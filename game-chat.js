@@ -1,9 +1,32 @@
-import {createChatFollow} from './chat-follow.js?v=53.8.41';
+import {createChatFollow} from './chat-follow.js?v=53.8.45';
 // Shared bounded room history. DOM updates follow real changes, not heartbeats.
 export function mountGameChat(root,{room,storage,gameShown=()=>false,notify=()=>{},onTyping=()=>{},onRead=()=>{},returnFocus=()=>{}}){
  const find=id=>root.querySelector('#'+id),panel=find('gameChatPanel'),toggle=find('gameChatToggle'),badge=find('gameChatUnread'),log=find('gameChatLog'),input=find('gameChatInput'),send=find('gameChatSend'),feedback=find('gameChatFeedback'),newer=find('gameChatNew'),empty=find('gameChatEmpty');
  let collapsed=false;try{collapsed=storage?.getItem('daytona-game-chat-collapsed-v1')==='1';}catch{}
  let key='',baseline=false,lastSeq=0,unread=0,shown=false,lastAck=0,lastRead=0,lastUpdate=-Infinity,displayKey='',historyKey='',unreadKey='';const nodes=new Map();
+ // Follow the usable viewport when the phone keyboard or browser bars move.
+ // Update only on open/resize/viewport scroll, never on the simulation loop.
+ let viewportKey='',viewportFrame=0;
+ function layoutViewport(){
+  viewportFrame=0;if(!shown||collapsed||!matchMedia('(pointer:coarse)').matches)return;
+  const viewport=window.visualViewport,height=Math.max(1,viewport?.height||innerHeight),offset=Math.max(0,viewport?.offsetTop||0);
+  const cramped=height<260,margin=cramped?4:12;
+  let bottom=offset+height-margin;
+  // Portrait has room above the pedals; keep the controls reachable there.
+  // A small/keyboard-reduced viewport keeps the larger overlay instead.
+  if(matchMedia('(orientation:portrait)').matches){
+   const controls=document.querySelector('.touch-gears'),box=controls?.getClientRects().length?controls.getBoundingClientRect():null;
+   const dock=box?Math.min(bottom,box.top-margin):bottom;
+   if(dock-offset-margin>=280)bottom=dock;
+  }
+  const panelHeight=Math.max(1,Math.min(460,bottom-offset-margin)),top=Math.max(offset,bottom-panelHeight);
+  const stamp=`${top}:${panelHeight}`;if(stamp===viewportKey)return;viewportKey=stamp;root.classList.toggle('chat-short-viewport',cramped);
+  root.style.setProperty('--chat-panel-top',top+'px');root.style.setProperty('--chat-panel-height',panelHeight+'px');follow.refresh();
+ }
+ function viewportChanged(){if(shown&&!collapsed&&!viewportFrame)viewportFrame=requestAnimationFrame(layoutViewport);}
+ window.visualViewport?.addEventListener('resize',viewportChanged);
+ window.visualViewport?.addEventListener('scroll',viewportChanged);
+ window.addEventListener('resize',viewportChanged);
  const bottom=()=>log.scrollTop+log.clientHeight>=log.scrollHeight-24;
  const follow=createChatFollow(log,{onBottom:()=>{if(shown&&!collapsed&&!document.hidden)read();}});
  const typing=()=>document.activeElement===input;
@@ -33,9 +56,9 @@ export function mountGameChat(root,{room,storage,gameShown=()=>false,notify=()=>
  function update(force=false){
   const now=performance.now();if(!force&&now-lastUpdate<100)return;lastUpdate=now;
   const available=room.active&&room.chatAllowed(room.id),next=available&&gameShown();
-  if(shown!==next){shown=next;root.hidden=!next;if(next&&!collapsed)follow.refresh();if(!next&&root.contains(document.activeElement)){document.activeElement.blur();if(gameShown())returnFocus();}}
+  if(shown!==next){shown=next;root.hidden=!next;if(next&&!collapsed){layoutViewport();follow.refresh();}if(!next&&root.contains(document.activeElement)){document.activeElement.blur();if(gameShown())returnFocus();}}
   const stamp=`${next}:${collapsed}:${available}`;
-  if(stamp!==displayKey){displayKey=stamp;root.classList.toggle('chat-collapsed',collapsed);panel.hidden=!next||collapsed;toggle.hidden=!next||!collapsed;toggle.setAttribute('aria-expanded',String(!collapsed));input.disabled=!available;send.disabled=!available||!input.value.trim();}
+  if(stamp!==displayKey){displayKey=stamp;root.classList.toggle('chat-collapsed',collapsed);panel.hidden=!next||collapsed;toggle.hidden=!next||!collapsed;toggle.setAttribute('aria-expanded',String(!collapsed));input.disabled=!available;send.disabled=!available||!input.value.trim();if(next&&!collapsed)layoutViewport();}
   if(next&&!collapsed&&!document.hidden&&bottom())read();
   const lobby=document.getElementById('chatLog');if(unread&&!document.hidden&&lobby?.getClientRects().length&&lobby.scrollTop+lobby.clientHeight>=lobby.scrollHeight-24)read();
  }

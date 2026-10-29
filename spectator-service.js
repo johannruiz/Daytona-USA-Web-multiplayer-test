@@ -1,8 +1,8 @@
-import {BUILD_ID} from './room-settings.js?v=53.8.41';
-import {SPECTATOR_VERSION,SPECTATOR_HZ} from './spectator-world.js?v=53.8.41';
-import {transformPacket} from './spectator-codec.js?v=53.8.41';
-import {soundState} from './spectator-audio.js?v=53.8.41';
-import {linkIdForSeat} from './central-link.js?v=53.8.41';
+import {BUILD_ID} from './room-settings.js?v=53.8.45';
+import {SPECTATOR_VERSION,SPECTATOR_HZ} from './spectator-world.js?v=53.8.45';
+import {transformPacket} from './spectator-codec.js?v=53.8.45';
+import {soundState} from './spectator-audio.js?v=53.8.45';
+import {linkIdForSeat} from './central-link.js?v=53.8.45';
 const token=()=>Array.from(crypto.getRandomValues(new Uint8Array(16)),v=>v.toString(16).padStart(2,'0')).join('');
 const name=v=>String(v||'Spectator').replace(/\s+/gu,' ').trim().slice(0,24)||'Spectator';
 const CAP=8,QUEUE=262144;

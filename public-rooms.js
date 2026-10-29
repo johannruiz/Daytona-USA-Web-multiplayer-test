@@ -1,4 +1,4 @@
-import {BUILD_ID,parseInvitation} from './room-settings.js?v=53.8.41';
+import {BUILD_ID,parseInvitation} from './room-settings.js?v=53.8.45';
 export const ROOM_TTL_MS=90000,ROOM_PULSE_MS=30000;
 export const DIRECTORY_IDLE_MS=5*60*1000;
 const states=new Set(['open','full','starting','racing','reconnecting']);

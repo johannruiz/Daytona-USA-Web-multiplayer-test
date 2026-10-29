@@ -1,7 +1,7 @@
 // Fixed-size GPU tile composition plus sparse, versioned native snapshots.
 const BYTE_SIZE=0x94000+496*384,PAGE=4096,PAGES=Math.ceil(BYTE_SIZE/PAGE);
 export async function createGpuLayers(device,format,screen,night){
- const load=async name=>{const response=await fetch(new URL(name+'?v=53.8.41',import.meta.url));if(!response.ok)throw Error('Could not load '+name);return device.createShaderModule({label:name,code:await response.text()});};
+ const load=async name=>{const response=await fetch(new URL(name+'?v=53.8.45',import.meta.url));if(!response.ok)throw Error('Could not load '+name);return device.createShaderModule({label:name,code:await response.text()});};
  const [computeShader,presentShader]=await Promise.all([load('system24.wgsl'),load('tiles-present.wgsl')]);
  for(const module of [computeShader,presentShader]){
   const info=await module.getCompilationInfo(),errors=info.messages.filter(m=>m.type==='error');

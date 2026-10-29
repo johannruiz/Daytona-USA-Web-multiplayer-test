@@ -1,15 +1,15 @@
-import {mountHostTransfer} from './host-transfer-ui.js?v=53.8.41';
-import {mountRoomInvitation} from './room-invitation.js?v=53.8.41';
-import {mountWaitingToast} from './waiting-room.js?v=53.8.41';
-import {PublicRoomDirectory} from './public-rooms.js?v=53.8.41';
-import {createFirebaseDirectoryBackend} from './firebase-client.js?v=53.8.41';
-import {mountPublicRoomBrowser} from './public-rooms-ui.js?v=53.8.41';
-import {carColor} from './car-colors.js?v=53.8.41';
-import {parseInvitation,invitation} from './room-settings.js?v=53.8.41';
-import {createLobbyNotifications} from './lobby-notifications.js?v=53.8.41';
-import {mountPlayerSkins} from './player-skins-ui.js?v=53.8.41';
-import {PLAYER_SKINS} from './player-skins.js?v=53.8.41';
-import {createChatFollow} from './chat-follow.js?v=53.8.41';
+import {mountHostTransfer} from './host-transfer-ui.js?v=53.8.45';
+import {mountRoomInvitation} from './room-invitation.js?v=53.8.45';
+import {mountWaitingToast} from './waiting-room.js?v=53.8.45';
+import {PublicRoomDirectory} from './public-rooms.js?v=53.8.45';
+import {createFirebaseDirectoryBackend} from './firebase-client.js?v=53.8.45';
+import {mountPublicRoomBrowser} from './public-rooms-ui.js?v=53.8.45';
+import {carColor} from './car-colors.js?v=53.8.45';
+import {parseInvitation,invitation} from './room-settings.js?v=53.8.45';
+import {createLobbyNotifications} from './lobby-notifications.js?v=53.8.45';
+import {mountPlayerSkins} from './player-skins-ui.js?v=53.8.45';
+import {PLAYER_SKINS} from './player-skins.js?v=53.8.45';
+import {createChatFollow} from './chat-follow.js?v=53.8.45';
 const $=id=>document.getElementById(id);
 export function invitationFromURL(href){return new URLSearchParams(new URL(href).hash.slice(1)).get('room')||'';}
 export function createRoomUI(room,{single,unlockAudio,previews,canResume=()=>false,enableArrivalNotifications=()=>{},notifyRequest=()=>{},notifyChat=()=>{},notifyReady=()=>{},notifyConfirmed=()=>{}}){

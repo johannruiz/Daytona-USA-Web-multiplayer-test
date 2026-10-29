@@ -1,3 +1,37 @@
+# Daytona USA Web — 53.8.45: G29 feedback and mobile controls
+
+This release includes the packaged 53.8.42–53.8.45 updates:
+
+- Fix a Chrome G29 timer invocation error that disconnected force feedback
+  after starting an effect. Preserve the macOS padded-report support.
+- Integrate G29 effect tests, explicit slot cleanup, steering-range controls
+  and a brief shift-LED test, with references to testg29 and the existing
+  contributor credits. Manual force tests are brief and capped at 20%.
+- Add a vertical analogue GAS slider above the mobile steering pad during
+  preparation and the first five simulated seconds of a race. If still held
+  when that window ends, it hides on release. It does not automate rocket starts.
+- Keep the collapsed mobile CHAT button above the gear controls.
+- Expanded mobile chat uses a larger overlay in landscape. In portrait it
+  docks above the controls when enough space is available. It follows the
+  visible viewport when the on-screen keyboard or browser bars move.
+- Preserve manual history scrolling, unread indicators and the existing
+  rule that chat is unavailable during racing.
+
+Validation includes 475 automated checks in v53.8.44 and targeted Chrome
+responsive regressions for v53.8.45. Simulated G29 tests exercise effect packets,
+connection persistence, cancellation, menu/blur stops and the shipping native
+engine integration. Mobile checks cover multitouch, a real Beginner start,
+portrait/landscape layouts, button scaling and simulated keyboard viewports.
+Physical G29 behavior and the iPhone software keyboard still need user testing.
+
+Reload all participants to use this version. Runtime files match the verified
+53.8.45 ZIP and MANIFEST.sha256. No ROM, credentials or new test/research artifacts
+are included. Existing licenses, credits and server-side security are preserved.
+
+---
+
+## Previous release notes
+
 # Daytona USA Web — 53.8.41: host transfer and configurable throttle
 
 This release includes the packaged 53.8.31–53.8.41 updates:

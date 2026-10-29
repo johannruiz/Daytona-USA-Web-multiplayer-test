@@ -1,6 +1,6 @@
 // Public web configuration. Database ownership is enforced by server rules.
-import {createAppCheckGate} from './firebase-security.js?v=53.8.41';
-import {createRoomAnnouncements} from './room-announcements.js?v=53.8.41';
+import {createAppCheckGate} from './firebase-security.js?v=53.8.45';
+import {createRoomAnnouncements} from './room-announcements.js?v=53.8.45';
 export const FIREBASE_CONFIG={
  apiKey:'AIzaSyDdISDv02wMhfd17CDVI8FQkk_mWBHlpms',
  authDomain:'daytona-usa-web.firebaseapp.com',

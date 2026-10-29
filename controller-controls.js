@@ -1,5 +1,5 @@
-import {CONTROLLER_ACTIONS,ControllerInput,loadControllers,saveControllers,defaultControllerProfile,assignControllerButton,buttonPressed,buttonValue,controllerAcceleration,alternateAccelName,controllerButtonName} from './controller-profile.js?v=53.8.41';
-import {gamepadSteering} from './steering.js?v=53.8.41';
+import {CONTROLLER_ACTIONS,ControllerInput,loadControllers,saveControllers,defaultControllerProfile,assignControllerButton,buttonPressed,buttonValue,controllerAcceleration,alternateAccelName,controllerButtonName} from './controller-profile.js?v=53.8.45';
+import {gamepadSteering} from './steering.js?v=53.8.45';
 const $=(root,id)=>root.querySelector('#'+id);
 const clamp=v=>Math.max(-1,Math.min(1,Number.isFinite(v)?v:0));
 const setText=(node,value)=>{if(node&&node.textContent!==value)node.textContent=value;};
