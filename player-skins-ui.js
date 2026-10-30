@@ -1,4 +1,4 @@
-import {PLAYER_SKINS,skinOwner} from './player-skins.js?v=53.8.45';
+import {PLAYER_SKINS,skinOwner} from './player-skins.js?v=53.8.47';
 const carIcon='<svg class="skin-car-icon" viewBox="0 0 80 40" aria-hidden="true"><path d="m8 24 5-9 13-3 7-8h21l8 9 9 3 3 13H8Z"/><path d="M30 13h29M36 6l-4 7m19-7 5 7M16 22h7m38 0h8"/><circle cx="23" cy="29" r="6"/><circle cx="60" cy="29" r="6"/></svg>';
 export function mountPlayerSkins({root,room,previews,context='multiplayer',panel=document.getElementById('roomPanel')}){
  const box=document.createElement('dialog');box.className='skin-picker';box.hidden=true;box.dataset.menuPopover='';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.setAttribute('aria-labelledby','skinPickerTitle');

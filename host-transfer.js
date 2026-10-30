@@ -1,5 +1,5 @@
-import {BUILD_ID,validateSettings} from './room-settings.js?v=53.8.45';
-import {MOTION_VERSION} from './motion-channel.js?v=53.8.45';
+import {BUILD_ID,defaultRoomName,validateSettings} from './room-settings.js?v=53.8.47';
+import {MOTION_VERSION} from './motion-channel.js?v=53.8.47';
 export const HOST_TRANSFER_VERSION=2;
 const token=()=>Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,'0')).join('');
 const validToken=x=>typeof x==='string'&&/^[a-f0-9]{32}$/.test(x);
@@ -29,7 +29,7 @@ export class VoluntaryHostTransfer{
  }else this.abort('Hosting transfer timed out. Your current host keeps the room.');}
  begin(target){
   const reason=this.reason(target);if(reason){this.room.error=reason;this.room.changed();return false;}
-  const s=this.room,state={members:s.members.map(m=>({...m,ready:false})),waiting:s.waitingRoster(),settings:{...s.settings},chat:s.chat.map(m=>({...m})),visibility:s.visibility,roomName:s.roomName,revision:s.revision};
+  const s=this.room,state={members:s.members.map(m=>({...m,ready:false})),waiting:s.waitingRoster(),settings:{...s.settings},chat:s.chat.map(m=>({...m})),visibility:s.visibility,roomName:s.roomName,roomNameCustom:s.roomNameCustom===true,revision:s.revision};
   const ids=[...state.members,...state.waiting].map(p=>p.id),keys=ids.map(id=>({id,key:token()}));
   const r=this.current={id:token(),target,from:s.id,secret:token(),state,keys,links:new Map(),proof:new Set(),adopted:new Set(),coordinator:true,committed:false};
   s.error='';s.hostTransferNotice='';this.arm(30000);s.changed();
@@ -43,7 +43,7 @@ export class VoluntaryHostTransfer{
   const chat=Array.isArray(p.chat)?p.chat.slice(-60).map(m=>s.validateChatMessage(m)).filter(Boolean):[];
   if(chat.some((m,i)=>i&&m.seq<=chat[i-1].seq)||!Number.isSafeInteger(p.revision)||p.revision<0)return null;
   if(d.target===s.id&&(!Array.isArray(d.keys)||d.keys.length!==people.length||new Set(d.keys.map(k=>k.id)).size!==people.length||d.keys.some(k=>!people.some(p=>p.id===k.id)||!validToken(k.key))||d.keys.find(k=>k.id===s.id)?.key!==d.key))return null;
-  return {members,waiting:[...waiting.values()],settings:validateSettings(p.settings),chat,visibility:p.visibility==='public'?'public':'private',roomName:String(p.roomName||'').slice(0,48),revision:p.revision};
+  return {members,waiting:[...waiting.values()],settings:validateSettings(p.settings),chat,visibility:p.visibility==='public'?'public':'private',roomName:String(p.roomName||'').slice(0,48),roomNameCustom:p.roomNameCustom===true,revision:p.revision};
  }
  receivePrepare(c,d){
   const s=this.room;if(s.isHost||c!==s.server||!allowed(s)||this.busy)return;
@@ -101,7 +101,7 @@ export class VoluntaryHostTransfer{
   s.spectators?.close();s.clearSnapshots();s.commands.clear();s.swaps.clear();s.pending.clear();s.sessions.clear();s.connections=new Map();s.server=null;
   s.host=r.target;s.secret=r.secret;s.isHost=s.id===r.target;s.sessionKey=r.key||r.keys.find(k=>k.id===s.id).key;
   s.members=[r.state.members.find(m=>m.id===r.target),...r.state.members.filter(m=>m.id!==r.target)].map(m=>({...m,ready:false,connection:'connected'}));
-  s.waiters=s.validateWaiters(r.state.waiting,s.members);s.settings={...r.state.settings};s.visibility=r.state.visibility;s.roomName=r.state.roomName;s.chat=r.state.chat.map(m=>({...m}));s.chatSequence=s.chat.at(-1)?.seq||0;s.chatRate.clear();
+  s.waiters=s.validateWaiters(r.state.waiting,s.members);s.settings={...r.state.settings};s.visibility=r.state.visibility;s.roomNameCustom=r.state.roomNameCustom;s.roomName=s.roomNameCustom?r.state.roomName:defaultRoomName(r.state.members.find(m=>m.id===r.target)?.name);s.chat=r.state.chat.map(m=>({...m}));s.chatSequence=s.chat.at(-1)?.seq||0;s.chatRate.clear();
   s.revision=r.state.revision+1;s.lobbySequence=0;s.lastLobbySequence=0;s.commandSequence=0;s.lastAck=null;s.epoch='';s.waitEpoch='';s.remotePhase=s.waiters.has(s.id)?'lobby':'';s.phase=s.waiters.has(s.id)?'waiting':'lobby';s.joinRole=s.waiters.get(s.id)?.spectator?'spectator':'driver';s.error='';s.awaitingStop=false;s.reconnectUntil=0;s.retryAt=0;s.retryAttempt=0;s.raceAuthority=null;s.raceInbox=null;s.distributor=null;
   if(s.isHost){
    for(const k of r.keys)if(k.id!==s.id)s.sessions.set(k.id,{key:k.key,until:0,commands:new Map(),hostTransfer:HOST_TRANSFER_VERSION});

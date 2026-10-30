@@ -3,22 +3,22 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#05070b"><title>Daytona USA · Private Multiplayer</title>
-  <link rel="stylesheet" href="style.css?v=53.8.45">
-  <link rel="stylesheet" href="host-console.css?v=53.8.45">
-  <link rel="stylesheet" href="controller-settings.css?v=53.8.45">
-  <link rel="stylesheet" href="input-settings.css?v=53.8.45">
-  <link rel="stylesheet" href="wheel-feedback.css?v=53.8.45">
-  <link rel="stylesheet" href="single-player.css?v=53.8.45">
-  <link rel="stylesheet" href="ui-consistency.css?v=53.8.45">
-  <link rel="stylesheet" href="menu-gamepad.css?v=53.8.45">
-  <link rel="stylesheet" href="race-standings.css?v=53.8.45">
-  <link rel="stylesheet" href="public-rooms.css?v=53.8.45">
-  <link rel="stylesheet" href="waiting-room.css?v=53.8.45">
-  <link rel="stylesheet" href="game-chat.css?v=53.8.45">
-  <link rel="stylesheet" href="lobby-layout.css?v=53.8.45">
-  <link rel="stylesheet" href="player-skins.css?v=53.8.45">
-  <link rel="stylesheet" href="spectator-menu.css?v=53.8.45">
-  <link rel="stylesheet" href="ui-motion.css?v=53.8.45">
+  <link rel="stylesheet" href="style.css?v=53.8.47">
+  <link rel="stylesheet" href="host-console.css?v=53.8.47">
+  <link rel="stylesheet" href="controller-settings.css?v=53.8.47">
+  <link rel="stylesheet" href="input-settings.css?v=53.8.47">
+  <link rel="stylesheet" href="wheel-feedback.css?v=53.8.47">
+  <link rel="stylesheet" href="single-player.css?v=53.8.47">
+  <link rel="stylesheet" href="ui-consistency.css?v=53.8.47">
+  <link rel="stylesheet" href="menu-gamepad.css?v=53.8.47">
+  <link rel="stylesheet" href="race-standings.css?v=53.8.47">
+  <link rel="stylesheet" href="public-rooms.css?v=53.8.47">
+  <link rel="stylesheet" href="waiting-room.css?v=53.8.47">
+  <link rel="stylesheet" href="game-chat.css?v=53.8.47">
+  <link rel="stylesheet" href="lobby-layout.css?v=53.8.47">
+  <link rel="stylesheet" href="player-skins.css?v=53.8.47">
+  <link rel="stylesheet" href="spectator-menu.css?v=53.8.47">
+  <link rel="stylesheet" href="ui-motion.css?v=53.8.47">
 </head>
 <body>
   <main class="arcade" aria-label="Daytona USA arcade">
@@ -117,7 +117,7 @@
           </div>
         </section>
         <section id="roomPanel" class="room-panel" hidden aria-labelledby="roomTitle" data-mobile-tab="grid">
-          <div class="room-heading"><div><span id="roomVisibilityLabel" class="room-eyebrow">PRIVATE MULTIPLAYER</span><h2 id="roomTitle">Your room</h2></div><div class="room-heading-meta"><span id="roomPhase" class="phase-pill">LOBBY</span><span id="roomCount" class="room-count">0 / 8 players</span><div id="roomInvite" class="room-invite" hidden><button id="inviteRoom" type="button" class="ui-button ui-secondary" aria-haspopup="dialog" aria-controls="inviteBlock" aria-expanded="false"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m10 14 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0M16 8l1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"/></svg>Invite friends</button><div id="inviteBlock" class="invite-card" data-menu-popover role="dialog" aria-labelledby="inviteTitle" tabindex="-1" hidden><div class="invite-heading"><h3 id="inviteTitle"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m10 14 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0M16 8l1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"/></svg>INVITE FRIENDS</h3><button id="closeInvite" type="button" class="ui-button ui-secondary ui-icon-button" aria-label="Close invitation">×</button></div><label for="inviteLink" class="sr-only">Private invitation link</label><input id="inviteLink" readonly aria-describedby="inviteHint"><div class="invite-actions"><button id="copyRoom" type="button" class="ui-button ui-secondary">Copy link</button><button id="copyCode" type="button" class="quiet-btn ui-button ui-quiet">Copy code</button></div><span id="roomCode" hidden></span><p id="inviteHint" class="room-hint">Only admitted players can join the grid and chat.</p><p id="inviteFeedback" class="invite-feedback" role="status" aria-live="polite"></p></div></div></div></div>
+          <div class="room-heading"><div><span id="roomVisibilityLabel" class="room-eyebrow">PRIVATE MULTIPLAYER</span><div class="room-title-row"><h2 id="roomTitle">Your room</h2><button id="editRoomName" type="button" class="ui-button ui-secondary ui-icon-button" aria-label="Edit room name" title="Edit room name" aria-haspopup="dialog" hidden><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1L20 7a2.83 2.83 0 0 0-4-4L4 15zM4 20h16"/></svg></button></div></div><div class="room-heading-meta"><span id="roomPhase" class="phase-pill">LOBBY</span><span id="roomCount" class="room-count">0 / 8 players</span><div id="roomInvite" class="room-invite" hidden><button id="inviteRoom" type="button" class="ui-button ui-secondary" aria-haspopup="dialog" aria-controls="inviteBlock" aria-expanded="false"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m10 14 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0M16 8l1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"/></svg>Invite friends</button><div id="inviteBlock" class="invite-card" data-menu-popover role="dialog" aria-labelledby="inviteTitle" tabindex="-1" hidden><div class="invite-heading"><h3 id="inviteTitle"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m10 14 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0M16 8l1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"/></svg>INVITE FRIENDS</h3><button id="closeInvite" type="button" class="ui-button ui-secondary ui-icon-button" aria-label="Close invitation">×</button></div><label for="inviteLink" class="sr-only">Private invitation link</label><input id="inviteLink" readonly aria-describedby="inviteHint"><div class="invite-actions"><button id="copyRoom" type="button" class="ui-button ui-secondary">Copy link</button><button id="copyCode" type="button" class="quiet-btn ui-button ui-quiet">Copy code</button></div><span id="roomCode" hidden></span><p id="inviteHint" class="room-hint">Only admitted players can join the grid and chat.</p><p id="inviteFeedback" class="invite-feedback" role="status" aria-live="polite"></p></div></div></div></div>
           <div id="roomDirectoryNotice" class="room-directory-notice" hidden><p id="roomDirectoryMessage" role="status" aria-live="polite"></p><button id="retryRoomPublish" type="button" class="ui-button ui-secondary">Retry listing</button></div>
           <div class="room-mobile-tabs" role="tablist" aria-label="Room view"><button id="roomGridTab" role="tab" aria-selected="true" aria-controls="roomWorkspace" type="button">ROOM</button><button id="roomChatTab" role="tab" aria-selected="false" aria-controls="chatPanel" type="button">CHAT <span id="mobileChatUnread" class="unread-badge" hidden>0</span></button></div>
           <div id="roomWorkspace" class="room-layout">
@@ -263,9 +263,9 @@
       </section>
     </div>
   </div>
-  <small id="buildVersion" class="build-version"><span>v53.8.45</span> · <time datetime="2026-10-29">29.10.26</time></small>
+  <small id="buildVersion" class="build-version"><span>v53.8.47</span> · <time datetime="2026-10-30">30.10.26</time></small>
   <div id="menuGamepadHints" class="menu-gamepad-hints" role="status" aria-label="Controller menu controls" hidden></div>
-  <script src="vendor/peerjs.min.js?v=53.8.45" defer></script><script src="daytona_engine.js?v=53.8.45" defer></script><script type="module" src="main.js?v=53.8.45"></script>
+  <script src="vendor/peerjs.min.js?v=53.8.47" defer></script><script src="daytona_engine.js?v=53.8.47" defer></script><script type="module" src="main.js?v=53.8.47"></script>
 </body>
 </html>
 

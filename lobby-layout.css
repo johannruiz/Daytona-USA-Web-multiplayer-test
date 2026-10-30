@@ -98,3 +98,8 @@
 /* Paint feedback on the whole card, independent of the smaller action hitbox. */
 #menuDialog .driver-card:has(>.seat-swap:enabled:is(:hover,:focus-visible,.gamepad-focus)){background:#fff9e8;box-shadow:inset 0 0 0 1px #d7bf6c}
 #menuDialog .driver-card>.seat-swap:enabled:is(:hover,:focus-visible,.gamepad-focus){background:transparent;outline:none!important;box-shadow:none}
+
+.room-title-row{display:flex;align-items:center;gap:10px;min-width:0}.room-title-row h2{min-width:0;margin-bottom:0}
+#menuDialog #editRoomName{flex-shrink:0;width:34px;min-width:34px;height:34px;min-height:34px;padding:8px;border-color:#c5c3b8;background:#ffffff80}
+.room-name-dialog label{display:block;font-size:12px;font-weight:700;margin-bottom:8px}.room-name-dialog input{box-sizing:border-box;width:100%;min-height:44px;font-size:16px;padding:10px 12px;background:#fff;color:#25251f;border:1px solid #bdbdb3;border-radius:3px}.room-name-error{color:#a32c22;font-size:12px}
+@media(pointer:coarse){#menuDialog #editRoomName{width:44px;min-width:44px;height:44px;min-height:44px;padding:12px}}

@@ -1,6 +1,10 @@
-import {DEFAULT_EEPROM} from './nvram.js?v=53.8.45';
-import {validEnvironment} from './environment.js?v=53.8.45';
-export const BUILD_ID='daytona-rev-a-central-53.8.16';
+import {DEFAULT_EEPROM} from './nvram.js?v=53.8.47';
+import {validEnvironment} from './environment.js?v=53.8.47';
+// Exact release, not a shared protocol generation: every release is isolated.
+export const CLIENT_VERSION='53.8.47';
+export const BUILD_ID=`daytona-rev-a-central-${CLIENT_VERSION}`;
+export const normalizeRoomName=value=>typeof value==='string'?value.replace(/\s+/gu,' ').trim():'';
+export const defaultRoomName=name=>(String(name||'Driver').trim().slice(0,24)||'Driver')+"'s room";
 export const MODES=['Normal','Grand Prix','Endurance'];
 // Number of original MODE UP presses from the factory Normal setting.
 export const DIFFICULTIES=['Normal','Hard','Hardest','Easy'];

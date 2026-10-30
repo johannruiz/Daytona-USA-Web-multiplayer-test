@@ -1,3 +1,26 @@
+# Daytona USA Web — 53.8.47: strict room versions and room names
+
+- Require an exact release match for room admission, spectators and host transfer.
+  Previous releases accidentally shared an older build identifier.
+- Derive the network build identifier from the client release. Add a frontend
+  build check to reject mismatched visible versions and asset cache versions.
+- Automatic room names follow the new host after a successful handover.
+  Custom names remain unchanged, including names that happen to match a default.
+- Add a host-only pencil button beside the room title to edit its name.
+  Changes reach room members and the public directory without clearing Ready.
+- Preserve all mobile chat, touch control and G29 improvements from 53.8.45.
+
+Validation: 481 automated tests pass, including public/private host handovers,
+name propagation and version rejection. Chrome desktop/mobile-size checks cover
+name editing, cancellation, focus and host-only access. Native engine unchanged.
+All participants must reload the latest game page before joining a room.
+Runtime matches the verified ZIP and manifest. No ROM or new test/research files
+are included. Existing credits and licenses are preserved.
+
+---
+
+## Previous release notes
+
 # Daytona USA Web — 53.8.45: G29 feedback and mobile controls
 
 This release includes the packaged 53.8.42–53.8.45 updates:

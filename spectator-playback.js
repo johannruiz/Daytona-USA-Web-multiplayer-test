@@ -1,15 +1,15 @@
-import {mountSpectatorStatus} from './spectator-view.js?v=53.8.45';
-import {BUILD_ID,validateSettings} from './room-settings.js?v=53.8.45';
-import {DEFAULT_EEPROM} from './nvram.js?v=53.8.45';
-import {linkIdForSeat} from './central-link.js?v=53.8.45';
-import {createRenderer} from './renderer.js?v=53.8.45';
-import {transformPacket} from './spectator-codec.js?v=53.8.45';
-import {SPECTATOR_VERSION,SpectatorWorldBuffer,worldState,worldGridSignature} from './spectator-world.js?v=53.8.45';
-import {ARCADE_STEP_MS} from './simulation-clock.js?v=53.8.45';
-import {mountSpectatorHUD} from './spectator-hud.js?v=53.8.45';
-import {createEnvironment,environmentSnapshot} from './environment.js?v=53.8.45';
-import {createSpectatorAudio} from './spectator-audio.js?v=53.8.45';
-import {createSpectatorRecovery} from './spectator-recovery.js?v=53.8.45';
+import {mountSpectatorStatus} from './spectator-view.js?v=53.8.47';
+import {BUILD_ID,validateSettings} from './room-settings.js?v=53.8.47';
+import {DEFAULT_EEPROM} from './nvram.js?v=53.8.47';
+import {linkIdForSeat} from './central-link.js?v=53.8.47';
+import {createRenderer} from './renderer.js?v=53.8.47';
+import {transformPacket} from './spectator-codec.js?v=53.8.47';
+import {SPECTATOR_VERSION,SpectatorWorldBuffer,worldState,worldGridSignature} from './spectator-world.js?v=53.8.47';
+import {ARCADE_STEP_MS} from './simulation-clock.js?v=53.8.47';
+import {mountSpectatorHUD} from './spectator-hud.js?v=53.8.47';
+import {createEnvironment,environmentSnapshot} from './environment.js?v=53.8.47';
+import {createSpectatorAudio} from './spectator-audio.js?v=53.8.47';
+import {createSpectatorRecovery} from './spectator-recovery.js?v=53.8.47';
 
 export function createSpectatorPlayback({room,getROM,getVolume=()=>1,root,onStatus=()=>{}}){
  const $=id=>root.querySelector('#'+id),hud=mountSpectatorHUD(root);
@@ -30,7 +30,7 @@ export function createSpectatorPlayback({room,getROM,getVolume=()=>1,root,onStat
  async function ensureReady(){
   if(!ready)ready=(async()=>{
    const file=getROM();if(!file)throw Error('Choose a ROM before watching.');
-   const next=await createDaytonaModule({locateFile:name=>new URL(name+'?v=53.8.45',import.meta.url).href});if(disposed)return;wasm=next;
+   const next=await createDaytonaModule({locateFile:name=>new URL(name+'?v=53.8.47',import.meta.url).href});if(disposed)return;wasm=next;
    // A disposed WebGL/WebGPU renderer leaves context and compositor state on
    // its canvas. A later spectator session owns a fresh graphics surface,
    // rather than reinitializing a retired context on the previous canvas.

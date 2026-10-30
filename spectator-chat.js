@@ -1,4 +1,4 @@
-import {createChatFollow} from './chat-follow.js?v=53.8.45';
+import {createChatFollow} from './chat-follow.js?v=53.8.47';
 // Shares the existing, bounded room chat. No separate spectator history,
 // Firebase subscription or additional network connection is created.
 export function mountSpectatorChat(root,{room,onRead=()=>{},storage}={}){

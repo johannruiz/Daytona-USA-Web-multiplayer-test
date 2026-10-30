@@ -1,4 +1,4 @@
-import {arrivalRoomKey} from './room-arrivals.js?v=53.8.45';
+import {arrivalRoomKey} from './room-arrivals.js?v=53.8.47';
 // Bounded, non-interactive announcement. It never changes menu/focus/game state.
 export function mountWaitingToast(root,{schedule=setTimeout,cancel=clearTimeout}={}){
  let key='',timer=null;const home=root.parentElement;

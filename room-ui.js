@@ -1,15 +1,16 @@
-import {mountHostTransfer} from './host-transfer-ui.js?v=53.8.45';
-import {mountRoomInvitation} from './room-invitation.js?v=53.8.45';
-import {mountWaitingToast} from './waiting-room.js?v=53.8.45';
-import {PublicRoomDirectory} from './public-rooms.js?v=53.8.45';
-import {createFirebaseDirectoryBackend} from './firebase-client.js?v=53.8.45';
-import {mountPublicRoomBrowser} from './public-rooms-ui.js?v=53.8.45';
-import {carColor} from './car-colors.js?v=53.8.45';
-import {parseInvitation,invitation} from './room-settings.js?v=53.8.45';
-import {createLobbyNotifications} from './lobby-notifications.js?v=53.8.45';
-import {mountPlayerSkins} from './player-skins-ui.js?v=53.8.45';
-import {PLAYER_SKINS} from './player-skins.js?v=53.8.45';
-import {createChatFollow} from './chat-follow.js?v=53.8.45';
+import {mountRoomName} from './room-name-ui.js?v=53.8.47';
+import {mountHostTransfer} from './host-transfer-ui.js?v=53.8.47';
+import {mountRoomInvitation} from './room-invitation.js?v=53.8.47';
+import {mountWaitingToast} from './waiting-room.js?v=53.8.47';
+import {PublicRoomDirectory} from './public-rooms.js?v=53.8.47';
+import {createFirebaseDirectoryBackend} from './firebase-client.js?v=53.8.47';
+import {mountPublicRoomBrowser} from './public-rooms-ui.js?v=53.8.47';
+import {carColor} from './car-colors.js?v=53.8.47';
+import {parseInvitation,invitation} from './room-settings.js?v=53.8.47';
+import {createLobbyNotifications} from './lobby-notifications.js?v=53.8.47';
+import {mountPlayerSkins} from './player-skins-ui.js?v=53.8.47';
+import {PLAYER_SKINS} from './player-skins.js?v=53.8.47';
+import {createChatFollow} from './chat-follow.js?v=53.8.47';
 const $=id=>document.getElementById(id);
 export function invitationFromURL(href){return new URLSearchParams(new URL(href).hash.slice(1)).get('room')||'';}
 export function createRoomUI(room,{single,unlockAudio,previews,canResume=()=>false,enableArrivalNotifications=()=>{},notifyRequest=()=>{},notifyChat=()=>{},notifyReady=()=>{},notifyConfirmed=()=>{}}){
@@ -20,6 +21,7 @@ export function createRoomUI(room,{single,unlockAudio,previews,canResume=()=>fal
  const cards=new Map(),emptySeats=new Map(),messages=new Map();
  const skinPicker=mountPlayerSkins({root:$('menuDialog'),room,previews});
  const hostTransfer=mountHostTransfer({room,root:$('menuDialog')});
+ const roomNameEditor=mountRoomName({room,root:$('menuDialog'),trigger:$('editRoomName')});
  $('roomLivery').onclick=()=>skinPicker.open($('roomLivery'));
  const toast=mountWaitingToast(document.getElementById('waitingToast'));
  const notifications=createLobbyNotifications({notifyChat,notifyReady,notifyConfirmed});
@@ -29,7 +31,7 @@ export function createRoomUI(room,{single,unlockAudio,previews,canResume=()=>fal
  try{const name=localStorage.getItem('daytona-driver-name-v1');if(name)$('driverName').value=name.slice(0,24);}catch{}
  function layout(active,showGuide=false){$('menuDialog').classList.remove('single-view');singlePanel.hidden=true;$('menuDialog').classList.toggle('mp-view',active);$('menuDialog').classList.toggle('mp-entry',active&&showGuide);$('mpUtilities').hidden=!active;const target=active?$('mpUtilities'):utilitiesHome;if(utilities.parentElement!==target)target.append(utilities);}
  function navigation(next=view){
-  if(next!=='room'){invitationMenu.close();skinPicker.close(false);}
+  if(next!=='room'){roomNameEditor.close(false);invitationMenu.close();skinPicker.close(false);}
   view=next;
   choices.hidden=view!=='modes'||!verified;
   const resume=view==='modes'&&verified&&canResume();
@@ -171,11 +173,11 @@ export function createRoomUI(room,{single,unlockAudio,previews,canResume=()=>fal
   single(){directory.setBrowsing(false);layout(true,true);navigation('single');$('menuDialog').classList.add('single-view');singlePanel.hidden=false;entry.hidden=true;panel.hidden=true;$('menuDialog').setAttribute('aria-labelledby','singleTitle');},
   modes(){showModes();$('singlePlayer').focus();},
   opened(){navigation();},
-  backLabel(){if(hostTransfer.isOpen())return hostTransfer.backLabel();if(skinPicker.isOpen())return 'Close liveries';if(invitationMenu.isOpen())return 'Close invite';const o=room.swapFor(room.id);return o&&!$('seatSwap').hidden&&$('seatSwap').contains(document.activeElement)?o.to===room.id?'Decline swap':'Cancel request':null;},
-  escape(){if(hostTransfer.close())return true;if(skinPicker.close())return true;if(invitationMenu.close(true))return true;const o=room.swapFor(room.id);if(o&&!$('seatSwap').hidden&&$('seatSwap').contains(document.activeElement)){o.to===room.id?room.answerSwap(o.id,false):room.cancelSwap(o.id);return true;}if(entry.hidden)return false;showModes();$('multiplayerPlayer').focus();return true;},
+  backLabel(){if(roomNameEditor.isOpen())return 'Cancel rename';if(hostTransfer.isOpen())return hostTransfer.backLabel();if(skinPicker.isOpen())return 'Close liveries';if(invitationMenu.isOpen())return 'Close invite';const o=room.swapFor(room.id);return o&&!$('seatSwap').hidden&&$('seatSwap').contains(document.activeElement)?o.to===room.id?'Decline swap':'Cancel request':null;},
+  escape(){if(roomNameEditor.close())return true;if(hostTransfer.close())return true;if(skinPicker.close())return true;if(invitationMenu.close(true))return true;const o=room.swapFor(room.id);if(o&&!$('seatSwap').hidden&&$('seatSwap').contains(document.activeElement)){o.to===room.id?room.answerSwap(o.id,false):room.cancelSwap(o.id);return true;}if(entry.hidden)return false;showModes();$('multiplayerPlayer').focus();return true;},
   verified(){verified=true;$('startBtn').hidden=true;$('dropzone').hidden=true;syncInvitation();if(invitationFromURL(location.href))showEntry(false);else{showModes();$('singlePlayer').focus();}},
   loading(){directory.setBrowsing(false);layout(false);verified=false;navigation('loading');entry.hidden=true;panel.hidden=true;$('dropzone').hidden=false;},
-  running(){invitationMenu.close();directory.setBrowsing(false);if(!room.occupied)layout(false);navigation(room.occupied?'room':'modes');singlePanel.hidden=true;entry.hidden=true;},
+  running(){roomNameEditor.close(false);invitationMenu.close();directory.setBrowsing(false);if(!room.occupied)layout(false);navigation(room.occupied?'room':'modes');singlePanel.hidden=true;entry.hidden=true;},
   link(state,_id,count){
    // Discovery numbers the guests backwards. The lobby seat is the driver's
    // public cabinet/car number; the native link ID is transport identity only.
@@ -196,7 +198,7 @@ export function createRoomUI(room,{single,unlockAudio,previews,canResume=()=>fal
    if($('settingsModal').hidden&&$('hostConsole')?.hidden!==false)$('menuDialog').setAttribute('aria-labelledby','roomTitle');
    $('startBtn').disabled=state.phase!=='playing';navigation('room');panel.hidden=false;entry.hidden=true;
    $('roomVisibilityLabel').textContent=state.visibility==='public'?'PUBLIC MULTIPLAYER':'PRIVATE MULTIPLAYER';
-   $('roomTitle').textContent=state.phase==='pending'?'Request sent':state.phase==='error'?'Room unavailable':state.roomName|| (state.isHost?'Your starting grid':'Your race room');
+   roomNameEditor.sync(state);$('roomTitle').textContent=state.phase==='pending'?'Request sent':state.phase==='error'?'Room unavailable':state.roomName|| (state.isHost?'Your starting grid':'Your race room');
    $('roomPhase').textContent=state.spectating?'SPECTATING':{lobby:'LOBBY',preparing:'PREPARING',playing:'ON TRACK',waiting:'NEXT RACE',pending:'WAITING',error:'OFFLINE',connecting:'CONNECTING',reconnecting:'RECONNECTING'}[state.phase]||'LOBBY';
    $('roomCount').textContent=state.phase==='pending'?'Awaiting host':`${state.members.length+(state.waiting||[]).filter(w=>!w.spectator).length} / 8 drivers`;
    if(state.code&&state.code!==lastURL)setURL(state.code);
