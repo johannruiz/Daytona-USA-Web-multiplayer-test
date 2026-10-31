@@ -104,9 +104,11 @@
 .room-name-dialog label{display:block;font-size:12px;font-weight:700;margin-bottom:8px}.room-name-dialog input{box-sizing:border-box;width:100%;min-height:44px;font-size:16px;padding:10px 12px;background:#fff;color:#25251f;border:1px solid #bdbdb3;border-radius:3px}.room-name-error{color:#a32c22;font-size:12px}
 @media(pointer:coarse){#menuDialog #editRoomName{width:44px;min-width:44px;height:44px;min-height:44px;padding:12px}}
 
-#mainMenu{display:flex;flex-direction:column;min-height:calc(100dvh - 44px)}
-#mainMenu>.rom-modal{margin-top:auto}
-@media(min-height:900px){#mainMenu{min-height:calc(100dvh - 70px)}}
+/* Extend only the landing menu when its donation footer is visible.
+   Multiplayer and resume screens retain their original modal geometry. */
+#menuDialog:not(.mp-view) #mainMenu:has(>.project-support:not([hidden])){display:flex;flex-direction:column;min-height:calc(100dvh - 44px)}
+#menuDialog:not(.mp-view) #mainMenu:has(>.project-support:not([hidden]))>.rom-modal{margin-top:auto}
+@media(min-height:900px){#menuDialog:not(.mp-view) #mainMenu:has(>.project-support:not([hidden])){min-height:calc(100dvh - 70px)}}
 .project-support{position:static;align-self:center;display:flex;flex-direction:column;align-items:center;box-sizing:border-box;width:100%;margin:auto 0 0;padding:18px 4px 0;gap:5px;text-align:center;color:#d8d8cf;background:transparent}
 #menuDialog .project-support .ui-button{min-height:44px;padding:0 12px;gap:7px;font-size:11px;font-weight:700;text-decoration:none;background:#171717;border:1px solid #ffffff60;border-radius:4px;color:#ffe12e;box-shadow:none}
 #menuDialog .project-support a.ui-button:hover{background:#292929;border-color:#ffffff60;color:#ffe12e}
