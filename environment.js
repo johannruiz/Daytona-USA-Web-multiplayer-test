@@ -1,5 +1,5 @@
-import {cycleAt,cycleDefaults} from './night-cycle.js?v=53.8.57';
-import {nightDefaults,nightFadeStart} from './night-settings.js?v=53.8.57';
+import {cycleAt,cycleDefaults} from './night-cycle.js?v=53.8.59';
+import {nightDefaults,nightFadeStart} from './night-settings.js?v=53.8.59';
 
 export const ENVIRONMENTS=Object.freeze(['day','night','cycle']);
 export const validEnvironment=value=>ENVIRONMENTS.includes(value);

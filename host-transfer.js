@@ -1,5 +1,5 @@
-import {BUILD_ID,defaultRoomName,validateSettings} from './room-settings.js?v=53.8.57';
-import {MOTION_VERSION} from './motion-channel.js?v=53.8.57';
+import {BUILD_ID,defaultRoomName,validateSettings} from './room-settings.js?v=53.8.59';
+import {MOTION_VERSION} from './motion-channel.js?v=53.8.59';
 export const HOST_TRANSFER_VERSION=2;
 const token=()=>Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,'0')).join('');
 const validToken=x=>typeof x==='string'&&/^[a-f0-9]{32}$/.test(x);

@@ -1,4 +1,4 @@
-import {bindTouchActivation} from './touch-guard.js?v=53.8.57';
+import {bindTouchActivation} from './touch-guard.js?v=53.8.59';
 // Timed by genuine simulation steps; menus and monitor refresh cannot restart it.
 export class StartThrottleWindow{
  constructor(){this.elapsed=0;this.scene=0;}

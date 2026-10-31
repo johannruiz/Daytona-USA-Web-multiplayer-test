@@ -1,16 +1,16 @@
-import {mountRoomName} from './room-name-ui.js?v=53.8.57';
-import {mountHostTransfer} from './host-transfer-ui.js?v=53.8.57';
-import {mountRoomInvitation} from './room-invitation.js?v=53.8.57';
-import {mountWaitingToast} from './waiting-room.js?v=53.8.57';
-import {PublicRoomDirectory} from './public-rooms.js?v=53.8.57';
-import {createFirebaseDirectoryBackend} from './firebase-client.js?v=53.8.57';
-import {mountPublicRoomBrowser} from './public-rooms-ui.js?v=53.8.57';
-import {carColor} from './car-colors.js?v=53.8.57';
-import {parseInvitation,invitation} from './room-settings.js?v=53.8.57';
-import {createLobbyNotifications} from './lobby-notifications.js?v=53.8.57';
-import {mountPlayerSkins} from './player-skins-ui.js?v=53.8.57';
-import {PLAYER_SKINS} from './player-skins.js?v=53.8.57';
-import {createChatFollow} from './chat-follow.js?v=53.8.57';
+import {mountRoomName} from './room-name-ui.js?v=53.8.59';
+import {mountHostTransfer} from './host-transfer-ui.js?v=53.8.59';
+import {mountRoomInvitation} from './room-invitation.js?v=53.8.59';
+import {mountWaitingToast} from './waiting-room.js?v=53.8.59';
+import {PublicRoomDirectory} from './public-rooms.js?v=53.8.59';
+import {createFirebaseDirectoryBackend} from './firebase-client.js?v=53.8.59';
+import {mountPublicRoomBrowser} from './public-rooms-ui.js?v=53.8.59';
+import {carColor} from './car-colors.js?v=53.8.59';
+import {parseInvitation,invitation} from './room-settings.js?v=53.8.59';
+import {createLobbyNotifications} from './lobby-notifications.js?v=53.8.59';
+import {mountPlayerSkins} from './player-skins-ui.js?v=53.8.59';
+import {PLAYER_SKINS} from './player-skins.js?v=53.8.59';
+import {createChatFollow} from './chat-follow.js?v=53.8.59';
 const $=id=>document.getElementById(id);
 export function invitationFromURL(href){return new URLSearchParams(new URL(href).hash.slice(1)).get('room')||'';}
 export function createRoomUI(room,{single,unlockAudio,previews,canResume=()=>false,enableArrivalNotifications=()=>{},notifyRequest=()=>{},notifyChat=()=>{},notifyReady=()=>{},notifyConfirmed=()=>{}}){
@@ -33,7 +33,7 @@ export function createRoomUI(room,{single,unlockAudio,previews,canResume=()=>fal
  function navigation(next=view){
   if(next!=='room'){roomNameEditor.close(false);invitationMenu.close();skinPicker.close(false);}
   view=next;
-  $('projectSupport').hidden=!['loading','modes','entry','single'].includes(view)||canResume();
+  $('projectSupport').hidden=!['loading','modes','entry','single'].includes(view);
   choices.hidden=view!=='modes'||!verified;
   const resume=view==='modes'&&verified&&canResume();
   $('startBtn').hidden=!resume;$('closeBtn').hidden=!resume;

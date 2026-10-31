@@ -1,4 +1,9 @@
-DAYTONA USA WEB 53.7.1
-Local: http://localhost:8152/
-Corregido el espectador abierto antes de iniciar cabinas. Recarga todos los participantes con esta version.
-Motor nativo, chat, fullscreen y sonido conservados. ZIP sin investigaciones/pruebas.
+DAYTONA USA WEB — v53.8.59 (30/10/2026)
+
+Esta carpeta contiene la versión estática lista para servir.
+Desde esta carpeta, ejecuta: node serve.js . 8080
+Abre: http://localhost:8080/
+
+Cada jugador debe proporcionar su propio ZIP ROM compatible y usar la misma versión.
+Funciones, controles y notas actuales: README.md.
+Notas históricas: docs/README_RELEASE_HISTORY.md.

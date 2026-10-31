@@ -1,4 +1,5 @@
-DAYTONA USA WEB 53.7.1 — SPECTATOR STARTUP FIX
-Local: http://localhost:8152/
-All peers must use v53.7.1. Open the spectator viewer before starting the cabinets or during a race.
-Preserves Trackside chat/fullscreen and original sound effects. WASM unchanged.
+DAYTONA USA WEB — v53.8.59
+
+Experimental capabilities include configurable racing-wheel input and device/browser-specific force feedback.
+Multiplayer and spectator performance varies with hardware and connectivity.
+See README.md for the current feature overview and docs/README_RELEASE_HISTORY.md for older previews.

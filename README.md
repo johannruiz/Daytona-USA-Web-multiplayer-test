@@ -1,10 +1,20 @@
 # Daytona USA Web
 
-**Version in this release folder: v53.8.57 (October 30, 2026)**
+**Version in this release folder: v53.8.59 (October 31, 2026)**
 
 A community browser port of the original Daytona USA arcade game, based on [daytona-arcade-recomp](https://github.com/alphanu1/daytona-arcade-recomp). This release contains the browser frontend and a compiled WebAssembly engine. **Bring your own supported Daytona USA ROM ZIP**: no ROM or extracted proprietary game content is included.
 
 This is an independent project, not affiliated with or endorsed by SEGA.
+
+## Release 53.8.59
+
+- Circuit and transmission selectors start at the leftmost option; a held wheel must return to neutral before making a new selection.
+- Enable sticky, accelerated initials navigation in a one-person multiplayer room as well as standalone play.
+- Keep the transparent donation footer at the end of the content across entry menus, including single-player Resume Arcade, without changing room geometry.
+- Preserve the background-play, guest-departure and automatic grid-rebuild behavior from previous releases.
+
+Validation: 493 automated tests pass. A real ROM in a one-cabinet linked Chrome session verified selector defaults and sequential navigation; a private test engine forced a result to verify entering and confirming BCD. Debug exports, ROMs and research artifacts are excluded. All clients must reload the same release. A global leaderboard is not included.
+
 
 ## Play locally
 
@@ -30,13 +40,13 @@ Online play depends on WebRTC connectivity, compatible browser behavior and exte
 
 | Version | Changes |
 | --- | --- |
-| **53.8.57** | Support/donation link placed after the menu content in normal scroll flow. |
+| **53.8.59** | Support/donation link placed after the menu content in normal scroll flow. |
 | **53.8.47** | Strict room-version checks and editable room names. |
 | **53.8.45** | Logitech G29 feedback fix and responsive mobile chat improvements. |
 | **53.8.41** | Lobby host transfer and configurable gradual throttle. |
 | **53.8.30** | Spectator reliability, reverse CPU orientation and multiplayer UI refinements. |
 
-Prior detailed release notes (v52.x through v53.4.1) are preserved in [docs/README_RELEASE_HISTORY.md](docs/README_RELEASE_HISTORY.md). Their old localhost ports, partial test results and release instructions apply to those historical builds, not v53.8.57.
+Prior detailed release notes (v52.x through v53.4.1) are preserved in [docs/README_RELEASE_HISTORY.md](docs/README_RELEASE_HISTORY.md). Their old localhost ports, partial test results and release instructions apply to those historical builds, not v53.8.59.
 
 ## Controls at a glance
 

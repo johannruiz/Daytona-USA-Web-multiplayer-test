@@ -16,7 +16,7 @@ export class ArcadeSelection{
   if(![1,2,3].includes(kind)||count!==(kind===1?3:kind===2||cursor===3?2:29)||selected>=count||kind!==3&&cursor!==0||cursor>3){this.reset();return raw;}
   const key=kind|(cursor<<8);
   const direction=Math.abs(value)>=30?Math.sign(value):0,neutral=Math.abs(value)<=12;
-  if(key!==this.key){this.reset();this.key=key;this.index=selected;this.armed=neutral||wasNeutral;}
+  if(key!==this.key){this.reset();this.key=key;this.index=kind===3?selected:0;this.armed=kind===3?(neutral||wasNeutral):neutral;if(kind!==3)return selectionSteer(kind,0);}
   const step=dir=>{this.index=Math.max(0,Math.min(count-1,this.index+dir));};
   const letters=kind===3&&cursor<3,dt=Math.max(0,Math.min(.05,Number.isFinite(seconds)?seconds:0));
   if(neutral){this.direction=0;this.armed=true;this.repeat=0;this.heldFor=0;}
