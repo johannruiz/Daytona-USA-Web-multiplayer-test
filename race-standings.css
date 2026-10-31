@@ -11,3 +11,5 @@
 @media(orientation:landscape) and (max-height:500px){.race-standings{font-size:18px;line-height:1.02}.race-network-hud{max-width:min(280px,38vw)}}
 
 .race-order-status{display:block;margin-top:5px;color:#ffed70;font:400 clamp(13px,1.1vw,17px)/1.1 DaytonaHUD,monospace;letter-spacing:.03em;text-shadow:1px 1px #000,0 0 3px #000}.race-order-status[hidden]{display:none}
+
+.race-driver[data-unavailable="true"] .race-name{opacity:.5}

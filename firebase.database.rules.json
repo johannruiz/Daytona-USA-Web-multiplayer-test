@@ -9,7 +9,7 @@
         ".write": "auth != null && $room.matches(/^[a-f0-9]{32}$/) && ((!data.exists() && (!newData.exists() || newData.child('ownerUid').val() == auth.uid)) || (data.child('ownerUid').val() == auth.uid && (!newData.exists() || newData.child('ownerUid').val() == auth.uid)))",
         ".validate": "newData.hasChildren(['name','players','state','invite','ownerUid','updatedAt','version']) && (newData.child('state').val() != 'open' || newData.child('players').val() < 8) && (newData.child('state').val() != 'full' || newData.child('players').val() == 8)",
         "name": {".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 48"},
-        "players": {".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 8 && newData.val() % 1 == 0"},
+        "players": {".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 8 && newData.val() % 1 == 0"},
         "state": {".validate": "newData.val() == 'open' || newData.val() == 'full' || newData.val() == 'starting' || newData.val() == 'racing' || newData.val() == 'reconnecting'"},
         "invite": {".validate": "newData.isString() && newData.val().matches(/^dt-[a-f0-9]{32}\\.[a-f0-9]{32}$/) && newData.val().beginsWith('dt-' + $room + '.')"},
         "ownerUid": {".validate": "newData.isString() && newData.val() == auth.uid"},

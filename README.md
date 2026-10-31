@@ -1,190 +1,114 @@
-# Daytona USA Web — 53.8.47: strict room versions and room names
+# v53.4.1 — player-follow preview
 
-- Require an exact release match for room admission, spectators and host transfer.
-  Previous releases accidentally shared an older build identifier.
-- Derive the network build identifier from the client release. Add a frontend
-  build check to reject mismatched visible versions and asset cache versions.
-- Automatic room names follow the new host after a successful handover.
-  Custom names remain unchanged, including names that happen to match a default.
-- Add a host-only pencil button beside the room title to edit its name.
-  Changes reach room members and the public directory without clearing Ready.
-- Preserve all mobile chat, touch control and G29 improvements from 53.8.45.
+Local: http://localhost:8143/. Previous integrated v53.4 remains on 8142. All participants must use v53.4.1.
 
-Validation: 481 automated tests pass, including public/private host handovers,
-name propagation and version rejection. Chrome desktop/mobile-size checks cover
-name editing, cancellation, focus and host-only access. Native engine unchanged.
-All participants must reload the latest game page before joining a room.
-Runtime matches the verified ZIP and manifest. No ROM or new test/research files
-are included. Existing credits and licenses are preserved.
+TAKE A SEAT and JOIN NEXT RACE now use a seat icon. The integrated spectator toolbar includes **Follow**, listing this session's real drivers by name and car. Switching uses the same relay, viewer identity and original playback; it does not negotiate another stream or increase the host's race uploads.
+
+The bounded native selector is active only in read-only replay mode. It resolves the original human/link-ID table and redirects the camera-object callback's local-car read at 0x6d60. It never replaces the actual local-car pointer or changes runner inputs, physics, contacts, network or result authority. Normal runners cannot activate the selector through this API.
+
+This is an initial external-view preview. Other drivers offer Behind and Far behind; close cockpit cameras remain available for the relay driver. HUD text is hidden for another driver because its data belongs to the relay; the traffic map and audio still follow the relay. Beginner's scripted rolling-start camera can temporarily override the intended perspective; the functional confirmation was made after GO. No promise of independent target HUD/audio or full start-sequence coverage is made here.
+
+Validation was intentionally limited at the user's request: one functional scenario in local Chrome/WebGL2 with two real drivers and one spectator, switching host → relay → host during an actual CPU race after the rolling start. Native focus IDs, continuing playback/racers, the same viewer identity/relay, the seat icon and the two visual perspectives were checked. The scenario was first inspected during the scripted start and then repeated after GO to confirm the actual exterior views. No full unit/regression, eight-player, adverse-network or WebGPU comparison suite was run for this preview. Native release rebuilt; no private audit hooks or ROM are distributed. Report/screenshots: build/spectator-follow-smoke/ (not dist).
+
+The Firebase rules are unchanged from v53.4. The prior instructions to permit zero-driver public listings still apply when publishing those integrated-room changes. No new ZIP has been created.
 
 ---
 
-## Previous release notes
+# Daytona USA Web — v53.4: spectators inside the room
 
-# Daytona USA Web — 53.8.45: G29 feedback and mobile controls
+Local: http://localhost:8142/ (`node scripts/serve.js dist 8142`). The earlier v53.3/8141 preview is preserved. All participants use v53.4. No new publication ZIP has been generated.
 
-This release includes the packaged 53.8.42–53.8.45 updates:
+## Room roles
 
-- Fix a Chrome G29 timer invocation error that disconnected force feedback
-  after starting an effect. Preserve the macOS padded-report support.
-- Integrate G29 effect tests, explicit slot cleanup, steering-range controls
-  and a brief shift-LED test, with references to testg29 and the existing
-  contributor credits. Manual force tests are brief and capped at 20%.
-- Add a vertical analogue GAS slider above the mobile steering pad during
-  preparation and the first five simulated seconds of a race. If still held
-  when that window ends, it hides on release. It does not automate rocket starts.
-- Keep the collapsed mobile CHAT button above the gear controls.
-- Expanded mobile chat uses a larger overlay in landscape. In portrait it
-  docks above the controls when enough space is available. It follows the
-  visible viewport when the on-screen keyboard or browser bars move.
-- Preserve manual history scrolling, unread indicators and the existing
-  rule that chat is unavailable during racing.
+Enter a room normally to receive the next available driver seat. **SPECTATE** releases your seat while retaining your identity, invitation connection and room chat. The spectators row is shared with everyone and does not reduce the eight driver places. Full rooms admit additional people as spectators: automatically in public rooms, after the normal host approval in private rooms. Up to eight spectator roles are admitted.
 
-Validation includes 475 automated checks in v53.8.44 and targeted Chrome
-responsive regressions for v53.8.45. Simulated G29 tests exercise effect packets,
-connection persistence, cancellation, menu/blur stops and the shipping native
-engine integration. Mobile checks cover multitouch, a real Beginner start,
-portrait/landscape layouts, button scaling and simulated keyboard viewports.
-Physical G29 behavior and the iPhone software keyboard still need user testing.
+Use **TAKE A SEAT** or select an open seat to become a driver again; the host serializes competing requests, so two people cannot take the same car. Native racers change roles in the lobby. An observer can reserve a free seat during a session with **JOIN NEXT RACE**; they enter the actual cabinet roster only after the host returns everyone to the lobby. That session's native identities, preparation revision and barriers remain unchanged. A host spectator returns everyone to the lobby before taking a seat.
 
-Reload all participants to use this version. Runtime files match the verified
-53.8.45 ZIP and MANIFEST.sha256. No ROM, credentials or new test/research artifacts
-are included. Existing licenses, credits and server-side security are preserved.
+**WATCH SESSION** opens the integrated dark viewer in the same page. It automatically opens when the next relay is assigned. **Back to room**, Escape and gamepad B return to the room and chat. There is no second ROM picker, spectator identity, approval or separate PeerJS control connection. The viewer reuses the verified ROM already supplied on this device. It supports the assigned relay's four cameras, sound and fullscreen. Host removal of a spectator, camera changes and closing the viewer do not end the race.
 
----
+The host can also spectate without occupying a native cabinet. It retains Central Link distribution and result authority; the first actual driver supplies the original arcade MASTER. Returning the host to a seat restores it to the beginning of the native roster. At least two actual drivers are still required to start.
 
-## Previous release notes
+## Playback scope
 
-# Daytona USA Web — 53.8.41: host transfer and configurable throttle
+The verified replay transport is retained: fifteen compressed transmissions per second contain every authentic intervening simulation step, with buffered original-engine playback. This is not sparse fifteen-state sampling plus new visual interpolation. Non-host drivers relay the stream (maximum two viewers per relay). Spectators are excluded from driving input, native participant count and readiness/preparation barriers. No new game/native engine modifications were needed for this integration; the release WASM is identical to v53.3.
 
-This release includes the packaged 53.8.31–53.8.41 updates:
+A spectator arriving after the session bootstrap waits for the next arcade session before receiving a view, while room/chat remain available. Arbitrary midrace initialization, free switching between drivers and live relay migration remain outside this version. Changes to an actual racer or the host's connection retain the existing departure/visibility policy. A suspended or overloaded viewer can lose its replay without stopping the drivers.
 
-- Voluntary host transfer from the lobby, with compact driver options for
-  Request swap and Make host. Seats, liveries, room chat and spectator roles
-  are preserved; the invitation changes and everyone readies again.
-- Spectator startup and relay recovery improvements, plus mobile menu polish.
-- Circuit and transmission choices stay selected after releasing the wheel,
-  stick or key. Circuit order is Beginner → Advanced → Expert.
-- Single-player initials retain their letter selection and repeat faster
-  when a direction is held.
-- Standard controllers can accelerate proportionally with right stick up.
-  Alternate throttle can be reassigned to a stick direction or an unused button.
-- Keyboard Gradual throttle defaults to Space and can be reassigned. It rises
-  and falls over 1.6 seconds across the full range, without automating a rocket
-  start. The normal accelerator remains available.
+## Firebase rule update before public publication
 
-Validation: 467 automated checks pass. Targeted Chrome tests cover remapping,
-persistence, controller input preview, sequential circuit selection and two
-linked cabinets entering a race. Controller inputs were simulated; physical
-wheel/controller and wider real-network testing remain useful.
+Publish this folder's **firebase.database.rules.json** in Realtime Database → Rules before deploying v53.4. The only rule difference permits an integer driver count from **0 to 8**, previously 1 to 8, so a host watching alone keeps a truthful open-room listing. Owner-only writes, bounded authenticated reads, field validation and App Check remain intact. Spectators never inflate the advertised driver count. No extra Firebase fields or race data are stored. These local checks did not modify production Firebase.
 
-Reload all participants to use this version. The published runtime is checked
-against MANIFEST.sha256. Existing licenses, contributor credits and server-side
-security settings are preserved. No ROM, private credentials or new research
-or test artifacts are included in this publication.
+## Validation of this integration
+
+- 313 Node tests passed: role identity/chat, serialized seat claims, duplicate command receipts, host without a native slot, unchanged preparation revision, observer removal during a race and zero-driver directory handling.
+- Real Chrome/PeerJS/WebRTC, three game instances: driver becomes spectator in the same page, watches an actual CPU race, changes camera, returns to chat, reserves a seat, and enters the next session. Two runners also establish the original arcade link and enter a second actual CPU race while their host spectates; the host subsequently restores its seat.
+- Eight real PeerJS driver connections admit the ninth entrant as a spectator and promote that same connection after a seat is freed. Six of these extra connections run room logic only, not eight simultaneous native simulations.
+- Responsive dark viewer checked at 1440×1000 and 390×844; all eight lobby seats remain visible without grid scrolling at the desktop fixture size.
+- 28 official Auth/Realtime Database emulator security checks passed, including zero drivers, denied negative/fractional/oversized counts, owner protection and bounded reads. Java 25 required a short local Unix-socket path; this was a test-only runtime setting.
+
+Earlier eight-runner native replay, reverse/CPU/livery and impaired-network measurements belong to v53.3 below; this integration does not claim a fresh eight-physical-device WAN certification. Reports/screenshots are private build artifacts and are not placed in dist.
 
 ---
 
-## Previous release notes
+# Daytona USA Web — v53.3: distributed spectator preview
 
-# Daytona USA Web — 53.8.30: spectator fixes and multiplayer UI polish
+Local preview: http://localhost:8141/ (`node scripts/serve.js dist 8141`). The previous v53.2.4 folder remains unchanged. All participants must use v53.3.
 
-This release includes the packaged 53.8.25–53.8.30 updates:
+## Watch a session
 
-- Spectator startup validates the actual actor grid and player mapping, with
-  fixes for joining a race in progress and switching player sound.
-- Reverse CPU cars use the correct orientation reference for slope and banking
-  on all three circuits.
-- Menu titles are upright; Back icons, dropdown spacing, spectator name tags
-  and menu transitions follow the existing interface style.
-- During an arcade session, players and viewers share join, spectating and
-  departure notices. Temporary reconnections do not replay arrival notices;
-  private admission requests remain host-only. Visual notices stay out of lobby.
-- Connections now sits between Controller vibration and Settings in the room
-  header. Active cabinets display IN GAME or PREPARING; READY remains a lobby
-  state. The Last connection report shortcut was removed from the start menu.
+1. Create a room and admit at least one other driver. A connected non-host driver supplies the spectator stream.
+2. Viewers use **Watch** in the public-room list, **Watch as spectator** with a private invitation, or the host's **Spectators → Open spectator page** link. Each viewer supplies their own local ROM; the existing browser ROM cache can be reused.
+3. In a private room, the host opens **Spectators** and selects **Admit** before starting the arcade. Public-room spectators are admitted automatically.
+4. Ready the drivers and select **START GAME**. The viewer follows its assigned relay player and can choose among the four original cameras, enable sound or enter fullscreen.
+5. Disconnecting a viewer does not stop the drivers. A late viewer waits for the next arcade session.
 
-Validation includes 432 automated checks for the 53.8.29 changes and targeted
-Chrome UI checks at five viewport sizes for 53.8.30. The runtime below matches
-MANIFEST.sha256. Reload all participating browsers to use the current files.
-Mobile UI work after 53.8.30 is not part of this publication. Existing licenses,
-contributor credits and server-side security settings are preserved.
+## Scope and transport
 
----
+Central Link remains responsible for the drivers. The host authorizes viewers and distributes them across connected non-host clients, with up to two viewers per relay and eight per room. Observers do not occupy driver seats, participate in the prepare barrier, transmit driving input or affect the official result authority. Firebase does not transport race data. No ROM or static car captures are distributed.
 
-## Previous release notes
+**15 transmissions per second carries every authentic intervening simulation step in compressed batches.** The viewer runs the original engine locally at its original cadence using a playback buffer. This is not sparse 15-state sampling with newly invented visual interpolation; retaining complete steps preserves original scene transitions, audio, CPU cars and game logic. It adds viewer delay. Reliable ordered delivery and bounded queues protect the replay; excessive backlog stops only the viewer.
 
-# Daytona USA Web — 53.8.24: G29 macOS support and room/chat improvements
+This first preview follows the assigned relay only. Free switching between drivers, arbitrary midrace initialization and live relay migration are not implemented. Relay assignment balances viewer counts; it does not yet estimate spare upload capacity. Stopping a spectator stream/service was tested independently from leaving as an actual racing driver; the existing driver-departure policy remains in effect. The close driver camera retains the original arcade hood and cockpit, as requested in v53.2.4.
 
-Release 53.8.24 integrates [gareth10203's PR #3](https://github.com/johannruiz/Daytona-USA-Web-multiplayer-test/pull/3).
-The Logitech G29 force-feedback provider preserves seven-byte native commands and
-pads them to the wheel's advertised output-report size, including the 16-byte
-descriptor reported on Chrome/macOS. Device selection retains the correct wheel
-collection filters. The original contributor commit is retained in the merge
-history; see [CONTRIBUTORS.md](CONTRIBUTORS.md).
+## Validation
 
-This publication also includes the previously packaged 53.8.22 and 53.8.23 changes:
+- 307 Node tests passed, including codec bounds, decompression limits, admission, unauthorized grants, startup buffering, viewer presence and independent backpressure.
+- Local native replay: eight runners plus one observer over 5,330 steps, comparing selected pose/progress/scene/callback fields. A two-runner Expert reverse replay with CPU cars and skins also passed.
+- Default engine parity against v53.2.4: eighteen samples across two boots, comparing work RAM, texture banks and prepared geometry/batches.
+- Real PeerJS/WebRTC: two drivers plus one observer entered an actual race. Camera changes, viewer closure, a second session and stopping only the relay service left the driver link active.
+- Spectator-only encrypted UDP impairment: nominal 300 ms RTT, ±25 ms jitter per direction and 3% seeded packet loss; both drivers and the observer kept advancing. The two-cabinet race measured about 9 KiB/s at 15 sends/s. This is a local test measurement, not a guarantee for every grid or network.
 
-- Public rooms are announced in Discord through the separately deployed,
-  authenticated Worker. The same announcement is closed when the room disappears;
-  player counts are omitted. Webhook and service-account credentials stay on the
-  server and are absent from this repository update.
-- PREPARING CABINET uses the disabled appearance from single player for both
-  hosts and guests.
-- Lobby, in-game and spectator chats follow new messages until the reader scrolls
-  upward. Reading position survives panel changes and bounded-history trimming;
-  the new-message button and sending a message return to the latest line.
-- Notification sounds are approximately 8 dB louder while retaining Interface
-  volume, mute, distinct motifs and existing notification cadence.
-
-Validation: **417 automated tests passed** in the integration workspace, plus
-Chrome checks of the three chats, mobile lobby tabs, preparation-button styling
-and rendered notification audio. **71 repository tests also pass**, including focused
-G29 lifecycle, pairing, provider and diagnostics regression tests. Physical G29
-confirmation on macOS is still pending; this is descriptor-based support.
-The four main/preview engine JS/WASM files are unchanged from 53.8.23. The runtime
-at the repository root matches `MANIFEST.sha256`. Reload to load the new version.
+These checks do not certify eight physical WAN devices or all mobile browsers. No new publication ZIP has been generated for this preview. Historical notes below describe their respective versions and do not override this section.
 
 ---
 
-## Previous release notes
+## v53.2.4 — Original close-camera cockpit
 
-# Daytona USA Web — 53.8.21: protected TURN connectivity
+The selected exterior skin remains in external views. The close camera uses the unmodified original arcade hood, cockpit and native damage variants. The added cowl, descriptor extension, geometry transforms and view-layer sorting from 53.2.3 have been removed. The preserved original renderer object set is used again. Manual preview: http://localhost:8140/.
 
-Release 53.8.21 adds authenticated Cloudflare TURN fallback for networks that
-cannot establish a direct WebRTC connection. Direct connections remain preferred.
-Temporary relay credentials refresh automatically; selected relay paths renew ICE
-while retaining the existing reliable and movement channels.
+# Daytona USA Web - 53.2.3 local preview: stable interior with original CPU perspective
 
-The separately deployed credential service validates Firebase Authentication and
-App Check, applies persistent global and per-identity issuance limits, and checks
-TURN usage every two minutes. Its SQLite controller retains the 900 GB safety
-latch and independently retries failed credential revocations in bounded batches.
-This is a software safety stop, not a guaranteed billing cap. No server-side
-credentials, private debug tokens or deployment tokens are included in this repo
-update. No Firebase database-rule change is required for this release.
+CPU liveries keep their original exterior geometry, UVs, camera and native polygon ordering. The stretched hood from the 53.2.2 preview is removed. Only the neutral forward dashboard trim is extended to fill the open interior. Three private view layers place the fill behind the local car, and the original instruments in front, while retaining the native depth ordering within each layer. The same ordering is used by WebGPU, WebGL2 and the software reference.
 
-Validation: **396 automated tests passed**, plus live forced-relay UDP and TLS/443
-checks, two-cabinet PeerJS admission/chat/Ready/movement, relay renewal with
-different temporary credentials during play, return to lobby, and a successful
-scheduled usage check. These bounded transport checks do not replace a WAN
-campaign with real game ROMs. The game engine JS/WASM is unchanged from 53.8.18.
+Damage changes the original car+0x84 hood pointer. The borrowed dashboard now resolves from the cabinet's canonical interior, independently of that damage pointer, and works in both original body draw paths while the local hood camera is selected. Damage state, physics, position, original CPU appearance and all other cameras are retained. CPU models still do not gain the Hornet's detailed deformation geometry.
 
-All players should reload to use 53.8.21, especially for relay sessions lasting
-more than two hours. The published runtime is at the repository root and matches
-`MANIFEST.sha256`. Existing contributor credits and license notices are retained.
+Local: node scripts/serve.js dist 8139. This is the manual-test preview; no new publication ZIP has been generated. The original 53.2.2 preview on 8138 is preserved.
 
 ---
 
-## Previous release notes
+# Daytona USA Web — 53.2.1: livery persistence
 
-# Daytona USA Web — 53.8.18: WebHID wheel feedback and updated runtime
+Selected liveries now remain active in the close hood camera and when the original pit-service routine restores the local car. Both single player and multiplayer use the same scoped visual correction. Original retains the arcade behavior.
 
-Release 53.8.18 includes the WebHID force-feedback providers, diagnostics, night settings, renderer and multiplayer fixes, and matching game JS/WASM. See [CONTRIBUTORS.md](CONTRIBUTORS.md) for @gareth10203's PR #2 contribution and the existing LICENSE, NOTICE.md and THIRD_PARTY.md for notices.
+The close camera previously selected a separate Hornet hood/interior mesh instead of the chosen CPU exterior. It now draws the selected CPU exterior model for that draw only. **CPU models do not contain a detailed cockpit:** this view shows their original exterior geometry, without the Hornet dashboard. No custom interior or textures are fabricated. Other cameras keep their original operation. Pit exit now restores the selected body and suppresses the original Hornet accessory, as the existing damage-recovery path already does.
 
-All players should use the same release. Publish the runtime files at the site root. The 53.8.18 ZIP has been hash-checked; browser/device compatibility and live multiplayer still require testing.
+Validation: 298 Node tests; old/new real-engine comparison on all four cameras in WebGL2 and WebGPU; 40 standalone close-camera choices; six linked races across all three circuits in both directions, four cameras per race and original pit model-restoration instruction replay; 39 multiplayer close-camera choices; eighteen Original RAM/texture parity samples; shipping single/multiplayer preparation, selection and restart regressions. Pit coverage replays the exact eight original restoration instructions in an isolated audit CPU context; it is not a claim of driving every pit sequence on physical devices.
+
+UI, network transport, timing, physics, Firebase and the preview engine are preserved. No ROM, static car captures or private audit hooks are packaged. All players should use **53.2.1**. Publish the ZIP contents with index.html at the root. Local: `node scripts/serve.js dist 8137`. The previous 53.2 directory and ZIP are preserved.
 
 ---
+
+## Previous release notes (historical)
 
 # Daytona USA Web — 53.2: single-player liveries
 

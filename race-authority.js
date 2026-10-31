@@ -1,5 +1,5 @@
-import {linkIdForSeat} from './central-link.js?v=53.8.47';
-import {NATIVE_HZ} from './link-timing.js?v=53.8.47';
+import {linkIdForSeat} from './central-link.js?v=53.8.57';
+import {NATIVE_HZ} from './link-timing.js?v=53.8.57';
 
 const integer=(x,a,b)=>Number.isSafeInteger(x)&&x>=a&&x<=b;
 const finite=x=>typeof x==='number'&&Number.isFinite(x);
@@ -61,8 +61,10 @@ function at(points,time){
 // so the host waits for causal evidence from every participant, not a guessed
 // timeout after the first arriving finish packet. Simulation never waits here.
 export class HostRaceAuthority {
- constructor(epoch,members,{reverse=false}={}){this.epoch=epoch;this.members=members.map(m=>({...m}));this.reverse=reverse;this.groups=[];this.bindings=new Map();this.serial=0;this.revision=0;}
+ constructor(epoch,members,{reverse=false}={}){this.epoch=epoch;this.members=members.map(m=>({...m}));this.reverse=reverse;this.groups=[];this.parked=new Set();this.bindings=new Map();this.serial=0;this.revision=0;}
+ park(id){this.parked.add(id);for(const g of this.groups){const t=g.tracks.get(id);if(t){t.parked=true;t.terminal=true;}}}
  observe(id,value,now,toHost){
+  if(this.parked.has(id))return false;
   const v=validateRaceReport(value,id,this.members);if(!v||!finite(now))return false;
   let old=this.bindings.get(id);
   if(old&&v.run<old.run){const group=[...this.groups].reverse().find(g=>g.tracks.get(id)?.run===v.run);if(!group)return false;const track=group.tracks.get(id);old={run:v.run,sequence:track.sequence||0,group,track};}
@@ -105,11 +107,14 @@ export class HostRaceAuthority {
  poll(now){
   const updates=[];
   for(const g of this.groups){
-   if(g.final||now-g.lastPublish<100||g.ids.some(id=>!g.tracks.has(id)))continue;
+   if(g.final||now-g.lastPublish<100||g.ids.some(id=>!g.tracks.has(id)&&!this.parked.has(id)))continue;
+   // A departed participant without a report cannot hold others at the barrier.
+   // Placeholder has no progress or finish evidence and sorts after known progress.
+   g.ids.forEach((id,car)=>{if(!g.tracks.has(id)&&this.parked.has(id))g.tracks.set(id,{id,car,run:1,points:[],finish:null,parked:true,terminal:true,last:{at:now,uncertainty:0}});});
    const tracks=g.ids.map(id=>g.tracks.get(id));if(tracks.some(t=>!t.last))continue;
-   const common=Math.min(...tracks.map(t=>t.points.at(-1)?.at??-Infinity));
-   const values=new Map(tracks.map(t=>[t.id,at(t.points,common)]));
-   const commonKnown=finite(common)&&now-common<=1000&&tracks.every(t=>values.get(t.id)!==null);
+   const common=Math.min(...tracks.filter(t=>!t.parked).map(t=>t.points.at(-1)?.at??-Infinity));
+   const values=new Map(tracks.map(t=>[t.id,t.parked?t.points.at(-1)?.progress??null:at(t.points,common)]));
+   const commonKnown=finite(common)&&now-common<=1000&&tracks.every(t=>t.parked||values.get(t.id)!==null);
    const finishes=tracks.filter(t=>t.finish),allTerminal=tracks.every(t=>t.finish||t.terminal);
    // A later complete report with no earlier finish is causal evidence that
    // its owner did not finish before this candidate, allowing for clock bounds.
@@ -121,6 +126,7 @@ export class HostRaceAuthority {
     if(a.finish&&b.finish)return a.finish.at-b.finish.at||a.car-b.car;
     if(a.finish||b.finish)return a.finish?-1:1;
     const pa=commonKnown?values.get(a.id):allTerminal?a.points.at(-1)?.progress:null,pb=commonKnown?values.get(b.id):allTerminal?b.points.at(-1)?.progress:null;
+    if(a.parked&&!finite(pa)&&finite(pb))return 1;if(b.parked&&!finite(pb)&&finite(pa))return -1;
     if(finite(pa)&&finite(pb)){const delta=this.reverse?pa-pb:pb-pa;if(Math.abs(delta)>1/1024)return delta;}
     return (previous.get(a.id)??a.car)-(previous.get(b.id)??b.car);
    });

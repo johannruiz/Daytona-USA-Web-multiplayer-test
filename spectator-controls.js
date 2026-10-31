@@ -1,7 +1,7 @@
-import {spectatorMarkup,mountSpectatorFullscreen} from './spectator-view.js?v=53.8.47';
-import {mountSpectatorChat} from './spectator-chat.js?v=53.8.47';
-import {parseInvitation} from './room-settings.js?v=53.8.47';
-import {createSpectatorPlayback} from './spectator-playback.js?v=53.8.47';
+import {spectatorMarkup,mountSpectatorFullscreen} from './spectator-view.js?v=53.8.57';
+import {mountSpectatorChat} from './spectator-chat.js?v=53.8.57';
+import {parseInvitation} from './room-settings.js?v=53.8.57';
+import {createSpectatorPlayback} from './spectator-playback.js?v=53.8.57';
 const eye='<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
 const seat='<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h6a2 2 0 0 1 2 2v8H6V5a2 2 0 0 1 2-2ZM6 13h12v4H6zM8 17v4M16 17v4M4 10v7M20 10v7"/></svg>';
 export function spectatorURL(code){parseInvitation(code);const url=new URL('./',location.href);url.hash=new URLSearchParams({room:code}).toString();return url.href;}

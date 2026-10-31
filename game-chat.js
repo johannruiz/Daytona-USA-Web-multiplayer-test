@@ -1,4 +1,4 @@
-import {createChatFollow} from './chat-follow.js?v=53.8.47';
+import {createChatFollow} from './chat-follow.js?v=53.8.57';
 // Shared bounded room history. DOM updates follow real changes, not heartbeats.
 export function mountGameChat(root,{room,storage,gameShown=()=>false,notify=()=>{},onTyping=()=>{},onRead=()=>{},returnFocus=()=>{}}){
  const find=id=>root.querySelector('#'+id),panel=find('gameChatPanel'),toggle=find('gameChatToggle'),badge=find('gameChatUnread'),log=find('gameChatLog'),input=find('gameChatInput'),send=find('gameChatSend'),feedback=find('gameChatFeedback'),newer=find('gameChatNew'),empty=find('gameChatEmpty');

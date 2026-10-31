@@ -1,6 +1,6 @@
-import {loadSingleSettings,sameSingleSettings,SINGLE_SETTINGS_ID} from './single-player-settings.js?v=53.8.47';
-import {mountPlayerSkins} from './player-skins-ui.js?v=53.8.47';
-import {PLAYER_SKINS} from './player-skins.js?v=53.8.47';
+import {loadSingleSettings,sameSingleSettings,SINGLE_SETTINGS_ID} from './single-player-settings.js?v=53.8.57';
+import {mountPlayerSkins} from './player-skins-ui.js?v=53.8.57';
+import {PLAYER_SKINS} from './player-skins.js?v=53.8.57';
 
 export function createSinglePlayerUI({storage,onOpen,onBack,onStart,getSession,unlockAudio,previews}){
  const $=id=>document.getElementById(id),panel=$('singlePlayerPanel'),form=$('singleRaceForm');

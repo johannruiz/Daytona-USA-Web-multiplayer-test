@@ -15,7 +15,7 @@ export function createRoomArrivals({notify=()=>{}}={}){
   const people=new Map();
   if(state.isHost&&state.visibility==='private')for(const p of state.pending||[])people.set(p.id,{person:p,stage:'request'});
   for(const p of state.waiting||[])people.set(p.id,{person:p,stage:p.needsApproval?'request':'joined'});
-  for(const p of state.members||[])people.set(p.id,{person:p,stage:'joined'});
+  for(const p of (state.members||[]).filter(p=>!p.departed))people.set(p.id,{person:p,stage:'joined'});
   for(const [id,{person,stage}] of people){
    if(!id||id===state.id)continue;
    let record=seen.get(id);if(!record){record={request:false,joined:false};seen.set(id,record);}

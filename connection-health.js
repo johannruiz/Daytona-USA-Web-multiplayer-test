@@ -1,6 +1,6 @@
 // Optional room-local observations. Never infer packet loss from delayed data.
 export const HEALTH_PHASES=['idle','connecting','pending','waiting','lobby','preparing','playing','reconnecting','error'];
-export const STOP_CAUSES=['requested-stop','player-left','visibility-interruption','local-progress-timeout','remote-progress-timeout','snapshot-ack-timeout','preparation-timeout','prepare-failed','send-error','send-queue-limit','receive-error','data-handler-error','transport-interruption','arcade-link-error','arcade-start-timeout','local-runtime-error'];
+export const STOP_CAUSES=['grid-rebuild','requested-stop','player-left','visibility-interruption','local-progress-timeout','remote-progress-timeout','snapshot-ack-timeout','preparation-timeout','prepare-failed','send-error','send-queue-limit','receive-error','data-handler-error','transport-interruption','arcade-link-error','arcade-start-timeout','local-runtime-error'];
 const number=(v,max)=>typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=max;
 export function normalizeHealth(h){
  if(!h||!(h.version===1||h.version===2&&h.flowMode==='latest')||!Number.isSafeInteger(h.sequence)||h.sequence<1||!HEALTH_PHASES.includes(h.phase)||typeof h.visible!=='boolean'||typeof h.signaling!=='boolean')return null;
@@ -41,6 +41,7 @@ const explanations={
  'send-error':['Send failed','The browser or transport rejected a send.'],
  'data-handler-error':['Invalid or undeliverable data','Received data could not be accepted or delivered to the arcade.'],
  'signaling-disconnected':['Invitation service interrupted','The signaling service disconnected; an existing game connection may still work.'],
+ 'grid-rebuild':['Grid rebuilt after the race','Remaining drivers reached attract; the room returned to the lobby to remove retired native slots.'],
  'visibility-interruption':['Tab became inactive','The cabinet’s game tab became hidden.'],
  'local-progress-timeout':['Local simulation stopped advancing','No local emulation steps were observed for 10 seconds.'],
  'remote-progress-timeout':['Remote progress timeout','No newer remote emulation counter arrived for 10 seconds. Network delay and a stalled remote simulation cannot be distinguished from this alone.'],

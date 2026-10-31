@@ -1,5 +1,5 @@
-import {linkIdForSeat,SAMPLE_BYTES,STATE_BYTES,STATE_TAG,SLOT_BYTES} from './central-link.js?v=53.8.47';
-import {carColor} from './car-colors.js?v=53.8.47';
+import {linkIdForSeat,SAMPLE_BYTES,STATE_BYTES,STATE_TAG,SLOT_BYTES} from './central-link.js?v=53.8.57';
+import {carColor} from './car-colors.js?v=53.8.57';
 
 // Original block: 00..07 = human ranks by race car ID; 0b = human count;
 // 0c..13 = link ID by race car ID. Race IDs are not selectable lobby seats.
@@ -67,11 +67,11 @@ export function mountRaceStandings(element){
    if(now-lastRender<100)return;lastRender=now;
    const rows=model.rows();if(!rows.length){clear();return;}
    const authority=model.authoritative,label=authority?.phase==='confirming'?'CONFIRMING FINISH\u2026':authority?.rows.some(r=>r.photoFinish)?'PHOTO FINISH \u00b7 ESTIMATED ORDER':authority?.phase==='final'?'RESULT CONFIRMED':authority?.rows.find(r=>r.id===model.id)?.status==='finished'?'FINISH CONFIRMED':model.awaitingFinish?'CONFIRMING FINISH\u2026':'';if(status.textContent!==label)status.textContent=label;status.hidden=!label;
-   const key=JSON.stringify(rows.map(r=>[r.id,r.name,r.cabinet,r.position]));if(key===lastKey)return;lastKey=key;
+   const key=JSON.stringify(rows.map(r=>[r.id,r.name,r.cabinet,r.position,!!r.paused,!!r.departed]));if(key===lastKey)return;lastKey=key;
    const wanted=new Set(rows.map(r=>r.id));for(const [id,n] of nodes)if(!wanted.has(id)){n.remove();nodes.delete(id);}
    rows.forEach((r,i)=>{
     let node=nodes.get(r.id);if(!node){node=document.createElement('li');node.className='race-driver';for(const cls of ['race-place','race-name']){const span=document.createElement('span');span.className=cls;node.append(span);}nodes.set(r.id,node);}
-    const color=carColor(r.cabinet);node.style.setProperty('--driver-color',color.hudColor||color.color);node.style.setProperty('--driver-outline',r.cabinet===5?'#eee9df':'#070707');node.dataset.cabinet=r.cabinet;node.dataset.position=r.position??'';
+    const color=carColor(r.cabinet);node.style.setProperty('--driver-color',color.hudColor||color.color);node.style.setProperty('--driver-outline',r.cabinet===5?'#eee9df':'#070707');node.dataset.unavailable=String(!!(r.paused||r.departed));node.dataset.cabinet=r.cabinet;node.dataset.position=r.position??'';
     node.children[0].textContent=ordinal(r.position);node.children[1].textContent=r.name;node.title=`${r.name} · ${r.position==null?'Not ranked':`Position ${r.position}`}`;
     node.setAttribute('aria-label',node.title);if(element.children[i]!==node)element.insertBefore(node,element.children[i]||null);
    });element.hidden=false;

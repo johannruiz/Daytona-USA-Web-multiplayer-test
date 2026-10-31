@@ -1,4 +1,4 @@
-import {normalizeTransportProbe} from './transport-probe.js?v=53.8.47';
+import {normalizeTransportProbe} from './transport-probe.js?v=53.8.57';
 // Bounded, room-local game measurements. Never accept IDs or device data from a sample.
 export const PERFORMANCE_HISTORY_LIMIT=300,PERFORMANCE_BATCH_LIMIT=4,PERFORMANCE_PARTICIPANT_LIMIT=32;
 const valid=(v,max=Number.MAX_SAFE_INTEGER)=>typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=max;

@@ -1,4 +1,4 @@
-import {gamepadSteering} from './steering.js?v=53.8.47';
+import {gamepadSteering} from './steering.js?v=53.8.57';
 export const CONTROLLER_KEY='daytona-controller-profiles-v1';
 export const CONTROLLER_ACTIONS=Object.freeze({accel:'Accelerate',brake:'Brake',gear1:'Gear 1',gear2:'Gear 2',gear3:'Gear 3',gear4:'Gear 4',shiftDown:'Shift down',shiftUp:'Shift up',camera1:'Camera 1',camera2:'Camera 2',camera3:'Camera 3',camera4:'Camera 4',coin:'Insert coin',start:'Start'});
 export const DEFAULT_BUTTONS=Object.freeze({accel:7,brake:6,gear1:1,gear2:0,gear3:2,gear4:3,shiftDown:4,shiftUp:5,camera1:12,camera2:15,camera3:13,camera4:14,coin:8,start:9});

@@ -3,22 +3,22 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#05070b"><title>Daytona USA · Private Multiplayer</title>
-  <link rel="stylesheet" href="style.css?v=53.8.47">
-  <link rel="stylesheet" href="host-console.css?v=53.8.47">
-  <link rel="stylesheet" href="controller-settings.css?v=53.8.47">
-  <link rel="stylesheet" href="input-settings.css?v=53.8.47">
-  <link rel="stylesheet" href="wheel-feedback.css?v=53.8.47">
-  <link rel="stylesheet" href="single-player.css?v=53.8.47">
-  <link rel="stylesheet" href="ui-consistency.css?v=53.8.47">
-  <link rel="stylesheet" href="menu-gamepad.css?v=53.8.47">
-  <link rel="stylesheet" href="race-standings.css?v=53.8.47">
-  <link rel="stylesheet" href="public-rooms.css?v=53.8.47">
-  <link rel="stylesheet" href="waiting-room.css?v=53.8.47">
-  <link rel="stylesheet" href="game-chat.css?v=53.8.47">
-  <link rel="stylesheet" href="lobby-layout.css?v=53.8.47">
-  <link rel="stylesheet" href="player-skins.css?v=53.8.47">
-  <link rel="stylesheet" href="spectator-menu.css?v=53.8.47">
-  <link rel="stylesheet" href="ui-motion.css?v=53.8.47">
+  <link rel="stylesheet" href="style.css?v=53.8.57">
+  <link rel="stylesheet" href="host-console.css?v=53.8.57">
+  <link rel="stylesheet" href="controller-settings.css?v=53.8.57">
+  <link rel="stylesheet" href="input-settings.css?v=53.8.57">
+  <link rel="stylesheet" href="wheel-feedback.css?v=53.8.57">
+  <link rel="stylesheet" href="single-player.css?v=53.8.57">
+  <link rel="stylesheet" href="ui-consistency.css?v=53.8.57">
+  <link rel="stylesheet" href="menu-gamepad.css?v=53.8.57">
+  <link rel="stylesheet" href="race-standings.css?v=53.8.57">
+  <link rel="stylesheet" href="public-rooms.css?v=53.8.57">
+  <link rel="stylesheet" href="waiting-room.css?v=53.8.57">
+  <link rel="stylesheet" href="game-chat.css?v=53.8.57">
+  <link rel="stylesheet" href="lobby-layout.css?v=53.8.57">
+  <link rel="stylesheet" href="player-skins.css?v=53.8.57">
+  <link rel="stylesheet" href="spectator-menu.css?v=53.8.57">
+  <link rel="stylesheet" href="ui-motion.css?v=53.8.57">
 </head>
 <body>
   <main class="arcade" aria-label="Daytona USA arcade">
@@ -120,6 +120,7 @@
           <div class="room-heading"><div><span id="roomVisibilityLabel" class="room-eyebrow">PRIVATE MULTIPLAYER</span><div class="room-title-row"><h2 id="roomTitle">Your room</h2><button id="editRoomName" type="button" class="ui-button ui-secondary ui-icon-button" aria-label="Edit room name" title="Edit room name" aria-haspopup="dialog" hidden><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1L20 7a2.83 2.83 0 0 0-4-4L4 15zM4 20h16"/></svg></button></div></div><div class="room-heading-meta"><span id="roomPhase" class="phase-pill">LOBBY</span><span id="roomCount" class="room-count">0 / 8 players</span><div id="roomInvite" class="room-invite" hidden><button id="inviteRoom" type="button" class="ui-button ui-secondary" aria-haspopup="dialog" aria-controls="inviteBlock" aria-expanded="false"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m10 14 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0M16 8l1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"/></svg>Invite friends</button><div id="inviteBlock" class="invite-card" data-menu-popover role="dialog" aria-labelledby="inviteTitle" tabindex="-1" hidden><div class="invite-heading"><h3 id="inviteTitle"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m10 14 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0M16 8l1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"/></svg>INVITE FRIENDS</h3><button id="closeInvite" type="button" class="ui-button ui-secondary ui-icon-button" aria-label="Close invitation">×</button></div><label for="inviteLink" class="sr-only">Private invitation link</label><input id="inviteLink" readonly aria-describedby="inviteHint"><div class="invite-actions"><button id="copyRoom" type="button" class="ui-button ui-secondary">Copy link</button><button id="copyCode" type="button" class="quiet-btn ui-button ui-quiet">Copy code</button></div><span id="roomCode" hidden></span><p id="inviteHint" class="room-hint">Only admitted players can join the grid and chat.</p><p id="inviteFeedback" class="invite-feedback" role="status" aria-live="polite"></p></div></div></div></div>
           <div id="roomDirectoryNotice" class="room-directory-notice" hidden><p id="roomDirectoryMessage" role="status" aria-live="polite"></p><button id="retryRoomPublish" type="button" class="ui-button ui-secondary">Retry listing</button></div>
           <div class="room-mobile-tabs" role="tablist" aria-label="Room view"><button id="roomGridTab" role="tab" aria-selected="true" aria-controls="roomWorkspace" type="button">ROOM</button><button id="roomChatTab" role="tab" aria-selected="false" aria-controls="chatPanel" type="button">CHAT <span id="mobileChatUnread" class="unread-badge" hidden>0</span></button></div>
+          <aside id="simulationPauseNotice" class="simulation-pause-notice" tabindex="-1" role="status" aria-live="polite" hidden><strong>Simulation paused</strong><p>Your browser paused the simulation. You’ve been moved out of the race so the other drivers can continue. Please wait for the next race.</p></aside>
           <div id="roomWorkspace" class="room-layout">
             <section class="grid-section" aria-labelledby="gridTitle"><div class="section-label"><h3 id="gridTitle"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M2 21v-3a7 7 0 0 1 14 0v3M17 4a3 3 0 0 1 0 6M18 13a6 6 0 0 1 4 6v2"/></svg>STARTING GRID</h3><div class="grid-heading-meta"><button id="pendingJump" type="button" class="ui-button ui-secondary" hidden>Requests</button><span id="readyCount">0 ready</span></div></div>
               <div class="grid-scroll"><ul id="playersList" class="room-players" aria-label="Players"></ul>
@@ -149,7 +150,7 @@
             </section>
           </div>
           <footer class="room-footer"><div class="room-status-row"><p id="roomMessage" role="status" aria-live="polite"></p><p id="roomConnection" class="room-connection" role="status" aria-live="polite"></p></div><p id="arcadeLinkStatus" class="room-hint" hidden></p><div class="room-actions"><button id="leaveRoom" type="button" class="quiet-btn ui-button ui-quiet ui-back"><svg class="ui-icon ui-back-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m10 5-7 7 7 7M3 12h18"/></svg><span id="leaveRoomLabel">Leave room</span></button><span class="action-spacer"></span><button id="readyRoom" type="button" aria-pressed="false" class="ui-button ui-secondary">I’M READY</button><button id="startRoom" type="button" class="launch-btn ui-button ui-primary" disabled aria-busy="false"><span id="startRoomLabel">START GAME</span> <span aria-hidden="true">→</span></button><button id="stopRoom" type="button" hidden class="ui-button ui-secondary ui-danger">Return all to room</button><button id="returnRoomGame" type="button" class="launch-btn ui-button ui-primary" hidden>RETURN TO GAME <span aria-hidden="true">→</span></button></div></footer>
-          <p class="room-note">Keep the game tab visible during a race. Game performance is shared with your room host for diagnostics.</p>
+          <p class="room-note">Background play depends on your browser. Keep the host simulation running. Game performance is shared with your room host for diagnostics.</p>
         </section>
         <p class="first-run">First visit: Single cabinet · Zero credits.<br>Let attract mode play, or insert a coin to race.</p>
       </section>
@@ -173,6 +174,7 @@
         <p class="service-note"><kbd>F2</kbd><span>Opens the original arcade settings. <b>F / S</b> moves the cursor, <b>D / S</b> changes a value, and <b>Enter</b> selects. Choose <b>EXIT</b> to return. <b>F3</b> is the service button.</span></p>
         <p class="guide-footer">Press the accelerator to confirm your car and circuit. <kbd>Esc</kbd> brings this menu back.</p>
       </section>
+      <aside id="projectSupport" class="project-support" aria-label="Support this project"><a class="ui-button ui-secondary" href="https://github.com/sponsors/johannruiz" target="_blank" rel="noopener noreferrer" aria-describedby="projectSupportText"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg>Donate here</a><p id="projectSupportText">Support the development and maintenance of this project.</p></aside>
       </div>
       <section id="settingsModal" class="rom-modal settings-modal" hidden>
         <div class="modal-stripe" aria-hidden="true"></div>
@@ -263,9 +265,9 @@
       </section>
     </div>
   </div>
-  <small id="buildVersion" class="build-version"><span>v53.8.47</span> · <time datetime="2026-10-30">30.10.26</time></small>
+  <small id="buildVersion" class="build-version"><span>v53.8.57</span> · <time datetime="2026-10-30">30.10.26</time></small>
   <div id="menuGamepadHints" class="menu-gamepad-hints" role="status" aria-label="Controller menu controls" hidden></div>
-  <script src="vendor/peerjs.min.js?v=53.8.47" defer></script><script src="daytona_engine.js?v=53.8.47" defer></script><script type="module" src="main.js?v=53.8.47"></script>
+  <script src="vendor/peerjs.min.js?v=53.8.57" defer></script><script src="daytona_engine.js?v=53.8.57" defer></script><script type="module" src="main.js?v=53.8.57"></script>
 </body>
 </html>
 

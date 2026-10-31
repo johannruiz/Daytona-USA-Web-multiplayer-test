@@ -1,6 +1,4 @@
-VERSION 53.2 - SKINS TAMBIEN EN SINGLE PLAYER
-Publicar contenido del ZIP con index.html en la raiz. Todos deben usar 53.2.
-Single Player > Your livery: Original y 39 skins CPU, con la misma barra de carga y cache local.
-La eleccion single player se guarda por separado. Cambiarla en una partida pausada requiere Apply & Restart.
-Los coches CPU, fisicas y progreso se conservan. No incluye ROM ni capturas estaticas de skins.
-Sin cambios en Firebase. Local: node scripts/serve.js dist 8136
+DAYTONA USA WEB 53.7.1
+Local: http://localhost:8152/
+Corregido el espectador abierto antes de iniciar cabinas. Recarga todos los participantes con esta version.
+Motor nativo, chat, fullscreen y sonido conservados. ZIP sin investigaciones/pruebas.

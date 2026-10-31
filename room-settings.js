@@ -1,7 +1,7 @@
-import {DEFAULT_EEPROM} from './nvram.js?v=53.8.47';
-import {validEnvironment} from './environment.js?v=53.8.47';
+import {DEFAULT_EEPROM} from './nvram.js?v=53.8.57';
+import {validEnvironment} from './environment.js?v=53.8.57';
 // Exact release, not a shared protocol generation: every release is isolated.
-export const CLIENT_VERSION='53.8.47';
+export const CLIENT_VERSION='53.8.57';
 export const BUILD_ID=`daytona-rev-a-central-${CLIENT_VERSION}`;
 export const normalizeRoomName=value=>typeof value==='string'?value.replace(/\s+/gu,' ').trim():'';
 export const defaultRoomName=name=>(String(name||'Driver').trim().slice(0,24)||'Driver')+"'s room";

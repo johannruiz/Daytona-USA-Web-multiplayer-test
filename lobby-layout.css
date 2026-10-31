@@ -103,3 +103,14 @@
 #menuDialog #editRoomName{flex-shrink:0;width:34px;min-width:34px;height:34px;min-height:34px;padding:8px;border-color:#c5c3b8;background:#ffffff80}
 .room-name-dialog label{display:block;font-size:12px;font-weight:700;margin-bottom:8px}.room-name-dialog input{box-sizing:border-box;width:100%;min-height:44px;font-size:16px;padding:10px 12px;background:#fff;color:#25251f;border:1px solid #bdbdb3;border-radius:3px}.room-name-error{color:#a32c22;font-size:12px}
 @media(pointer:coarse){#menuDialog #editRoomName{width:44px;min-width:44px;height:44px;min-height:44px;padding:12px}}
+
+#mainMenu{display:flex;flex-direction:column;min-height:calc(100dvh - 44px)}
+#mainMenu>.rom-modal{margin-top:auto}
+@media(min-height:900px){#mainMenu{min-height:calc(100dvh - 70px)}}
+.project-support{position:static;align-self:center;display:flex;flex-direction:column;align-items:center;box-sizing:border-box;width:100%;margin:auto 0 0;padding:18px 4px 0;gap:5px;text-align:center;color:#d8d8cf;background:transparent}
+#menuDialog .project-support .ui-button{min-height:44px;padding:0 12px;gap:7px;font-size:11px;font-weight:700;text-decoration:none;background:#171717;border:1px solid #ffffff60;border-radius:4px;color:#ffe12e;box-shadow:none}
+#menuDialog .project-support a.ui-button:hover{background:#292929;border-color:#ffffff60;color:#ffe12e}
+#menuDialog .project-support a.ui-button:focus-visible{outline:2px solid #ffe12e;outline-offset:3px}
+.project-support .ui-icon{color:currentColor;fill:none;stroke:currentColor;stroke-width:1.8}.project-support p{margin:0;font-size:clamp(8px,2.65vw,11px);line-height:1.45;white-space:nowrap}
+.project-support[hidden],.simulation-pause-notice[hidden]{display:none}
+.simulation-pause-notice{padding:12px 14px;margin:0 0 14px;border:1px solid #c7aa48;border-radius:4px;background:#fff8df;color:#514011;text-align:left}.simulation-pause-notice strong{font-size:13px}.simulation-pause-notice p{font-size:12px;line-height:1.55;margin:5px 0 0}

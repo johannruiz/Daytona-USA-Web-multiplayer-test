@@ -1,3 +1,127 @@
+# 2026-10-22 — v53.4.1: selector de jugador y asiento
+
+Carpeta independiente multiplayer-spectator-follow, puerto 8143; se conserva 53.4/8142. Icono de asiento en TAKE A SEAT / JOIN NEXT RACE. Follow lista las identidades auténticas de la sesión sin cambiar de stream/relay ni crear otro PeerJS.
+
+Se revisó el callback original generado 0x6d60: carga el coche para el objeto visual y su transformación. Un selector acotado de link 0..8, permitido sólo cuando spectator_replay_mode==2, resuelve la tabla humana 0x540028 y los objetos reales desde 0x501220/stride/count. Sólo ese read visual devuelve el objeto seguido; no se escribe el puntero global propio ni se interceptan los consumidores de física/entradas/colisiones/autoridad. Un getter acotado confirma el último link enfocado sin exponer memoria arbitraria. Los corredores permanecen en modo normal/captura y no usan la corrección.
+
+Seguimiento inicial por cámaras exteriores Behind/Far behind. Las cercanas se conservan para el relé; se bloquean al seguir otro coche para evitar asociarle el cockpit ajeno. Se permite omitir la capa de texto HUD en el visor, por defecto intacta en ambos renderizadores y en corredores. El minimapa/tráfico y audio aún corresponden al relé; se declara expresamente en pantalla. La salida lanzada original puede imponer su perspectiva antes de GO. No se añade simulación ni estados interpolados inventados.
+
+Por petición explícita se limitó la validación a UN escenario funcional, no una campaña: dos pilotos reales y un visor en Chrome/WebGL2, arranque de carrera CPU, cambio host→relé→host, comprobación de links de foco originales, identidad/stream conservados, corredores activos, icono y capturas de las perspectivas roja/azul. La primera ejecución observó el inicio aún bajo la cámara de salida; se repitió el mismo escenario esperando a después de GO para confirmar la vista exterior. Ambas ejecuciones del escenario finalizaron; la evidencia visual válida de seguimiento corresponde a la segunda. No se ejecutó suite completa, ocho simulaciones, red adversa ni comparación WebGPU. Informe final: build/spectator-follow-smoke/report.json. No se presenta como validación general de todos los circuitos, skins o secuencias.
+
+Se consultó el código público LiveCamera.bas de SailorSat/daytona-utils como referencia de conceptos, sin copiar código ni direcciones de otra ROM: https://github.com/SailorSat/daytona-utils/blob/master/src/src/LiveStats/LiveCamera.bas . La implementación usa la función original de nuestra revisión y nuestro replay local.
+
+Motor release recompilado, exportaciones nuevas acotadas daytona_spectator_target/focus; probes privados no se empaquetan. Reglas Firebase idénticas a 53.4. Sin ZIP nuevo; el usuario realizará las pruebas manuales siguientes.
+
+---
+
+# 2026-10-22 — v53.4: espectador integrado en la sala
+
+Nueva carpeta multiplayer-spectator-room, puerto 8142; se conserva 53.3/8141. El usuario entra por el flujo habitual y puede liberar su asiento con SPECTATE, conservar identidad/chat y recuperar una plaza concreta. Una sala llena admite espectadores (pública automática; privada con aprobación normal). No hay formulario ni conexión de control adicional: se reutiliza el PeerJS de la sala y su ROM verificada. El antiguo enlace spectator.html redirige al menú integrado.
+
+La representación distingue los waiters con spectator=true y cabinet=null de las reservas reales para la próxima sesión. El validador acota identidades, roles, máximo ocho pilotos y ocho espectadores y excluye a los observadores de plazas, Ready, barreras y tráfico nativo. Los comandos set-role usan la autenticación, numeración y ACK idempotentes existentes. El host arbitra plazas simultáneas. Reservar durante preparación/carrera no cambia la revisión ni los Ready de los corredores; la incorporación sólo ocurre al volver al lobby. Retirar un observador durante carrera no cambia época ni revisión.
+
+El host también puede mirar sin cabina nativa: conserva distribución de estados y autoridad de resultados, mientras el primer corredor real asume MASTER del arcade. El distribuidor se publica al recibir pasos de ese corredor en lugar de esperar un paso nativo inexistente del host. Los timeouts locales excluyen esa simulación inexistente y siguen supervisando a cada corredor real. Los movimientos/órdenes siguen los mismos canales previos. Recuperar la plaza del host requiere lobby y lo devuelve al inicio del roster. No se recompila ni cambia el WASM respecto a v53.3.
+
+El visor oscuro es un dialog dentro del menú existente, con sus controles, foco y B/Escape para volver a sala. La fila de espectadores queda fuera del panel fijo de ocho asientos, sin robarles altura ni forzar scroll en el tamaño desktop probado. El cierre visual conserva la reproducción, suspende sonido y omite el dibujo; cambiar de rol cancela el visor y libera su renderer/audio. Cargar el motor propio se prepara al elegir espectador. La retransmisión sigue a 15 lotes/s con todos los pasos auténticos y buffer, no añade interpolación de instantáneas dispersas.
+
+Limitaciones explícitas: el visor se engancha al arranque de la siguiente sesión arcade, no a mitad de una sesión ya iniciada; sigue al relé asignado y no cambia libremente de piloto. Límite de dos visores por retransmisor no-host, ocho roles de espectador en sala. No hay migración en caliente. Un espectador puede reservar plaza para la siguiente; un corredor activo no puede desaparecer del roster en plena carrera. El host debe volver al lobby antes de recuperar su cabina. Se conserva la política previa de pérdida de conexión/visibilidad de corredores.
+
+Firebase conserva esquema y contenido mínimo. Sólo cambia el mínimo permitido de players de 1 a 0 para poder anunciar una sala cuyo host está mirando solo. Los observadores no suman pilotos. Deben publicarse las nuevas reglas antes del despliegue; no se han cambiado reglas de producción. Las 28 comprobaciones oficiales en emuladores Auth/RTDB pasaron, incluidas propiedad del registro, consultas acotadas y rechazo de campos/cuentas inválidas. El emulador Java 25 falló inicialmente con su socket local largo; JDK_JAVA_OPTIONS=-Djdk.net.unixdomain.tmpdir=. lo resolvió sin modificar el sistema ni la configuración de producción.
+
+Validación nueva: 313 tests Node aprobados; tests/integrated-spectator-webrtc.cjs con PeerJS/WebRTC real y tres instancias del motor, arranque/carrera CPU auténticos, cámaras, chat, misma identidad, reserva sin detener corredores, host observador con dos corredores enlazados, segunda carrera CPU auténtica y recuperación de su asiento. También ocho conexiones reales de conductores y noveno observador; seis conexiones adicionales ejecutaron sólo lógica de sala para evitar ocho simulaciones innecesarias. No se presenta como ocho dispositivos físicos de Internet. Capturas desktop/mobile y ausencia de scroll interno de los ocho asientos en 1440x1000. Informes: build/integrated-spectator/report.json, build/public-rooms/rules.json, unit-tests.txt. La evidencia anterior de red adversa y ocho motores se conserva en la versión previa; no se inventan pruebas nuevas equivalentes.
+
+---
+
+# 2026-10-22 — v53.3: primer espectador distribuido implementado
+
+Carpeta independiente `multiplayer-spectator`, localhost:8141. Se conserva v53.2.4. La propuesta de investigación anterior queda como antecedente; el alcance real de esta entrega se describe aquí.
+
+El host autoriza espectadores y asigna clientes retransmisores por número de visores, con límite de dos por cliente y ocho por sala. El espectador usa su ROM y motor locales y nunca entra en los ocho puestos, barreras, colisiones, autoridad o ACK de los corredores. La conexión de control host-espectador se separa del stream cliente-espectador. En público se admite automáticamente; en privado, el host aprueba desde Spectators. No se cambia el esquema ni las reglas Firebase.
+
+Se eligió un diario completo de pasos auténticos: controles, bytes de enlace realmente consumidos, relojes y órdenes oficiales antes/después del paso. Se comprime una vez por lote y se envía a 15 lotes/s mediante canal fiable/ordenado. El receptor reproduce a la cadencia original con buffer. No equivale a enviar sólo 15 instantáneas/s y añadir interpolación visual nueva; omitir estados sin reconstruir toda la lógica habría introducido riesgos en selección, CPU, sonido y transiciones. La edad de recepción dentro del paso se captura y reproduce explícitamente para no volver a predecir usando el reloj de pared tardío del visor. Sin audiencia no se captura el diario ni se inicia el temporizador de envío.
+
+Límites del prototipo: incorporación antes de iniciar la sesión arcade; llegada tardía espera la siguiente. Sigue al retransmisor asignado y ofrece sus cuatro cámaras, sin cambiar libremente de corredor. No hay migración en caliente ni medición de capacidad de subida para asignar relés. El buffer añade retraso y no se promete latencia fija. El cierre o exceso de cola del visor sólo lo detiene a él. Detener el servicio de retransmisión sin salir como piloto no detiene el enlace de carrera; esto no demuestra que salir como piloto evite la política previa de desconexión de corredores.
+
+Validación reproducible, informes privados en build/:
+
+- Suite Node: 307 aprobadas; las nueve específicas de espectador también pasaron después de los últimos ajustes de presencia/interfaz.
+- spectator-native-8/report.json: ocho corredores más observador, 5.330 pasos y coincidencia de los campos auditados de pose/progreso/escena/callback. spectator-native-2-reverse-1/report.json: Expert inverso, CPU y skins, 5.330 pasos. Son motores locales, no ocho navegadores físicos en Internet.
+- player-skins-parity/parity.json: dieciocho muestras, dos arranques, RAM/texturas/geometría/lotes idénticos al motor anterior sin espectadores.
+- spectator-webrtc-network/report.json: PeerJS/WebRTC real, dos pilotos y un observador; moneda, start y aceleración reales hasta escena 22. Sólo el trayecto del espectador se somete a 150 ms por dirección, jitter ±25 ms por dirección y pérdida UDP sembrada del 3%. Se descartaron once datagramas en la ejecución; todos siguieron avanzando. Se probaron cámaras, cierre de stream/visor, segunda sesión y parada del servicio de relay conservando el enlace piloto.
+- En esa carrera de dos cabinas se observaron 15 envíos/s y unos 9 KiB/s, con 38 pasos de buffer en la muestra. El caso de ocho motores comprimió a aproximadamente el 11,16% del diario bruto. No extrapolar a todos los circuitos, redes o dispositivos.
+
+Los probes de auditoría permanecen en build/rules-audit. El motor distribuible sólo añade las dos funciones acotadas de captura/reproducción del reloj, sin lecturas/escrituras arbitrarias. No se incluyen ROM, capturas de coches ni perfiles de navegador. Manual de uso en README.md. Pendiente la prueba manual del usuario antes de preparar ZIP.
+
+---
+
+## 2026-10-21 — Investigación de espectadores distribuidos (sin implementación)
+
+Fuente enviada: https://www.youtube.com/watch?v=1VTsDZNixdM — Daytona USA - Live Spectator Alpha 3, Ariane Fugmann, 2014-07-31. La descripción del autor presenta ocho jugadores, una torre de control y un espectador de doble pantalla; son herramientas propias que imitan funciones de Special Edition.
+
+### Evidencia primaria
+
+- https://github.com/SailorSat/daytona-utils/blob/master/src/src/Lagfix.bas: ReadUDP duplica los paquetes de 3589 bytes hacia STATS_RemoteAddress, conservando el recorrido de los jugadores. No codifica vídeo.
+- https://github.com/SailorSat/daytona-utils/blob/master/src/src/LiveStats/LiveClient.bas: ProcessFakeFrame adapta el enlace privado de la instancia observadora; ProcessFrame sigue el estado de carrera, automatiza la entrada, oculta HUD, copia posición/velocidad/yaw/modelo del coche elegido y adapta su tabla local. No equivale a añadir un noveno piloto.
+- https://github.com/SailorSat/daytona-utils/blob/master/src/src/LiveStats/LiveCamera.bas: cámaras de seguimiento, helicóptero y puntos/presets por circuito. No es una función que baste activar en nuestro menú.
+- https://forum.arcadecontrols.com/index.php?topic=133283.80: instrucciones históricas del autor para daytonas/Saturn Ads, MASTER, CAR 1, SPECIAL y restricciones de ocho participantes y de quién inicia. Son restricciones de esa versión, no requisitos demostrados para nuestra ROM/recompilación.
+- https://w3c.github.io/webrtc-pc/: DataChannel permite intercambio de datos P2P. Una conexión distinta no elimina la competencia por el mismo acceso a Internet.
+
+### Encaje con el proyecto actual
+
+web/central-link.js contiene bloques auténticos de 448 bytes por cabina, reloj, rotación de slots por destinatario y compresión de bloques repetidos. web/multiplayer.js recibe el agregado completo en arcade-state y dispone de estados brutos antes de la predicción visual nativa. Un cliente ya tiene información de todas las cabinas, aunque su propio estado publicado en el agregado puede tener más antigüedad que su simulación local. Es viable investigar su reenvío sin abrir una nueva salida de estados desde el host a cada espectador.
+
+El flujo de enlace es un estado de comunicaciones, no una imagen completa de la memoria, recursos gráficos, sonido, escena ni CPU. No demuestra por sí solo entrada arbitraria a mitad de carrera. Haría falta iniciar y mantener una instancia observadora y adaptar sus slots/cámara sin publicar un bloque de jugador, tocar el cupo de ocho ni entrar en los ACK, barreras de preparación, timeouts, colisiones, clasificación o autoridad de resultados de los corredores. No copiar direcciones de daytonas a nuestra ROM sin mapearlas.
+
+### Propuesta para una prueba separada
+
+Host mantiene autorización y datos oficiales. Un cliente voluntario, con margen de simulación/red, reenvía estados brutos recibidos del host a uno o pocos espectadores en conexiones dedicadas. Cada espectador usa su ROM local y renderiza sus propias cámaras. Reenviar época, secuencia, identidades, ajustes, skins, estados de carrera y resultados oficiales; remapear slots de forma explícita. Conservar la antigüedad e incertidumbre de origen sumando cada tránsito/residencia: nunca reiniciar el reloj ni reenviar estados ya predichos como si fueran originales recientes.
+
+Colas y ACK del espectador independientes, sustitución de movimiento pendiente por el último estado, límite por retransmisor y prioridad al tráfico de carrera. Un fallo o cierre del espectador sólo debe cerrarlo/reasignarlo; un fallo del retransmisor debe buscar otro sin interrumpir pilotos. Elegir por salud sostenida, colas y capacidad observada, no sólo ping; no se conoce con exactitud la capacidad de subida a partir de RTT. No prometer carga cero ni espectadores ilimitados. Puede requerir TURN según cada pareja de redes.
+
+Primero validar dos corredores + un observador conectado antes de empezar, con cambio de coche/cámara, CPU, inversa, skins y resultados; después pérdidas/jitter, caída del retransmisor, ocho corredores y múltiples observadores; finalmente incorporación a mitad de carrera. Un buffer de reproducción exclusivamente del espectador puede absorber jitter a costa de retraso adicional, con tamaño a medir. La propuesta conserva Central Link para corredores y no usa Firebase para datos de carrera.
+
+Coste orientativo calculado, no medido: agregado compacto para ocho cabinas = 5+8*(448+4)=3621 bytes. A 30 envíos/s son 108630 B/s (~0.87 Mbit/s) por espectador, sólo payload de ese agregado; transporte, tiempos, metadatos, control y retransmisiones se suman. Repartir espectadores reparte la subida adicional, no la elimina. Esta revisión no añade código, APIs ni cambios al build.
+
+## v53.2.4 — Original close-camera cockpit
+
+The selected exterior skin remains in external views. The close camera uses the unmodified original arcade hood, cockpit and native damage variants. The added cowl, descriptor extension, geometry transforms and view-layer sorting from 53.2.3 have been removed. The preserved original renderer object set is used again. Manual preview: http://localhost:8140/.
+
+# 2026-10-21 - 53.2.3: interior estable con perspectiva CPU original
+
+Carpeta aislada multiplayer-skin-cowl, puerto 8139. Se preserva 53.2.2/8138. Se eliminan el filtrado del modelo CPU a seis paneles y la deformacion de sus vertices. La malla y UV CPU vuelven a ser originales en la vista cercana.
+
+La investigacion encuentra que 0x171a4/0x171e0 cambian car+0x84 al procesar dano. Las variantes 4, 8 y 12 sustituyen el modelo normal por 0x2846e8c/0x2846e78/0x2846ea0, fuera del filtro inicial de interiores. El nuevo dibujado toma el interior canonico de 0x281e3a8 segun el modelo de cabina 0x501488, sin sobrescribir car+0x84. Ademas admite los retornos 0x7d68 y 0x7d7c de la funcion original de dibujo, limitados al coche local y al selector de vista 1 (0x501710). El segundo retorno cubre la rama de cuerpo normal que puede usar la camara.
+
+Solo la arista delantera del material negro del tablero se extiende hacia la union con el capo. Los instrumentos y su arista trasera conservan su geometria. Metadatos privados de capa, con firma y sin cambiar la ABI de GeoPoly, se alojan en bits altos de reverse que el motor no consumia; se conserva su parte original. El orden es HUD original, instrumentos, coche, relleno y mundo, manteniendo las claves originales de ventana/z dentro de cada capa. Original y vistas sin metadatos ejecutan el orden previo. El orden se comparte entre Frame GPU (ambas APIs) y Raster de referencia; el modulo separado de previews no se recompila.
+
+Prueba cowl-regression: motores reales, captura sin relleno/media/completa, ejecucion aislada de la rutina original 0x17174 con estados 1/4/8/12/0x100; se conservan pose y cuerpo CPU y se dibuja el tablero tras cada cambio de referencia. El recorrido posterior con volante/acelerador prueba 2.000 frames, pero no cruza el umbral de la rama normal en esa ejecucion: no se presenta como reproduccion completa de toda sacudida de camara. Tambien se ejecuta la restauracion original de modelo de pits (ocho instrucciones), sin afirmar un recorrido manual completo por cada pit.
+
+El motor de release no exporta parametros de ajuste, lecturas arbitrarias ni contadores de auditoria. No hay cambios de transporte, relojes, Firebase, configuracion de carrera o controles; los modulos web solo cambian la version/cache. Esta carpeta sigue siendo la vista previa para revision manual antes del siguiente ZIP.
+
+---
+
+# 2026-10-21 — 53.2.1: persistencia de skins en cámara cercana y pits
+
+Versión separada multiplayer-skin-persistence, localhost:8137, basada en 53.2 preservada. Dos rutas originales explican los cambios a la skin de asiento. No se cambia renderer, ciclo, red, física, checkpoints, tabla de IA o configuración Firebase.
+
+## Rutas y corrección
+
+En 0x7d60 el dibujado cercano lee car+0x84 mediante g9 (R25), un modelo alternativo de capó/interior del Hornet. El cuerpo normal car+0x14 ya estaba corregido. Sólo para ese PC, dirección exacta y coche humano con elección válida, se resuelve el modelo exterior CPU de mayor detalle (fila 0x281e3d4 + skin*48 + 8). Se deja intacto el modelo alternativo almacenado y el resto de lecturas. Las skins CPU carecen del interior/tablero detallado del Hornet: la cámara muestra su geometría exterior original, sin inventar interiores ni remapear texturas con UV incompatibles. Éste es un límite visual explícito, no una nueva skin interior completa.
+
+La restauración tras pits en 0xe558 escribe cuerpo+0x14 y en 0xe578 accesorio+0x258 usando r9 (R9), en vez de g13 (R29) usado por recuperación de daños. Se añaden esos dos sitios al filtro existente: modelo CPU elegido y accesorio cero. La escritura original a alternate+0x84 se conserva; su dibujado se resuelve por la ruta anterior. Original, coches CPU y humanos sin elección mantienen sus lecturas/escrituras originales. El helper conserva tanto la identidad single exacta como el mapeo de link multiplayer, independiente del asiento.
+
+## Evidencia y alcance
+
+- skin-persistence-ab: dos motores reales 53.2/53.2.1 con misma ROM, controles y pose. El anterior reproduce modelo Hornet en cámara cercana y restauración de carrocería en pits. El corregido usa el modelo seleccionado. Cuatro botones de cámara y ruta original de dibujo ejecutados; capturas privadas antes/después. Repetido con WebGL2 y WebGPU. Cuarenta IDs standalone, incluido Original, no alteran el alternate almacenado.
+- skin-persistence-linked: seis carreras originales, tres circuitos por dos sentidos, asientos 6/3 y skins 1/14; cuatro cámaras y restauración de pits por cabina/carrera; catálogo 39, recuperación de daños e invitado corriendo mientras host en attract. El probe de catálogo se ejecuta durante una carrera activa, no sobre la estructura de attract que no es un humano de carrera.
+- El probe de pits reproduce exactamente 0xe548..0xe578 (ocho instrucciones generadas originales), con CPU/reloj aislados y restauración del contexto principal. Comprueba cuerpo/accesorio y conserva pose, progreso y número de frame. No representa una vuelta completa entrando manualmente al pit ni todas las situaciones de servicio.
+- player-skins-parity: dieciocho muestras de RAM de trabajo y bancos de textura con Original coinciden entre 53.2 y 53.2.1, incluida recarga.
+- Regresión del motor de producción standalone y dos cabinas multiplayer. 298 tests Node. Ningún probe privado pasa al JS/WASM de release.
+
+Las imágenes de auditoría se quedan en build/. Preview JS/WASM byte-idénticos a 53.2. Los módulos web sólo cambian identificadores de versión/caché. El ZIP previo 53.2 se preserva (SHA-256 806a36e09ce9b36f5f11afd0615f714dcd6007d0a61ec281ad19b0d9c3bb323d). Sin nueva certificación de WAN/Safari físico.
+
+---
+
 # 2026-10-21 — 53.2: skins en single player
 
 Versión separada multiplayer-single-liveries, puerto 8136, basada en 53.1.1 preservada. Se añade Your livery como sexta tarjeta del formulario single, compartiendo el selector y su progreso real para cuarenta vistas. El contexto single tiene identificador/título de diálogo propios y copia específica: no afirma que haya un host o reserva en una sala. Ambos contextos usan la misma caché local de imágenes, sin compartir la elección aplicada. El selector mantiene cancelación, foco, inert, teclado y mando.
