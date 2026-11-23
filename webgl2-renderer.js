@@ -1,16 +1,19 @@
-import {packNight,updateNightPose} from './night-settings.js?v=53.8.59';
+import {packNight,updateNightPose} from './night-settings.js?v=53.8.60';
+import {createTexturePackRenderer} from './texture-pack.js?v=53.8.60';
+import {createGeometryInterpolation} from './geometry-interpolation.js?v=53.8.60';
 // WebGL2 backend: integer RAM textures, GPU System-24 composition and bounded
 // non-blocking presentation. The native game and simulation clock are shared.
 const TILE_BYTES=0x94000+496*384,PAGE=4096,PAGES=Math.ceil(TILE_BYTES/PAGE);
 const SHADERS=['model2.vert.glsl','model2.frag.glsl','fullscreen.vert.glsl','system24.frag.glsl','tiles-present.frag.glsl'];
 export async function createWebGL2Renderer(canvas,onFailure,{onStatus=()=>{}}={}){
  const sources=await Promise.all(SHADERS.map(async name=>{
-  const response=await fetch(new URL(name+'?v=53.8.59',import.meta.url));
+  const response=await fetch(new URL(name+'?v=53.8.60',import.meta.url));
   if(!response.ok)throw Error('Could not load '+name);return response.text();
  }));
  const gl=canvas.getContext('webgl2',{alpha:false,antialias:false,depth:false,stencil:false,preserveDrawingBuffer:false,powerPreference:'high-performance'});
  if(!gl)throw Error('No hardware-accelerated WebGL2 context was available.');
  let lost=false,disposed=false,lossTimer=null,resources=null;
+ let pack=null;
  let hudVisible=true;
  const nightValues=packNight(false);
  const nightBeamParts=[16,20,24,28,32].map(i=>nightValues.subarray(i,i+4));
@@ -20,8 +23,16 @@ export async function createWebGL2Renderer(canvas,onFailure,{onStatus=()=>{}}={}
  let tileOwner=null,tileHeap=null,pending=true,vertexSize=0,vertexCount=0,currentSlot=0;
  const versions=new Uint32Array(PAGES),metadata=new Uint32Array(4),view=new Float32Array(4),batchDraws=[];
  let flights=[];
+ let completedFrames=0,lastFrameOwner=null,lastFrame=-1,lastFrameAlpha=1;
+ const geometry=createGeometryInterpolation();
+ let poseAvailable=false,presentedAlpha=1;
  const allocated={programs:new Set(),textures:new Set(),buffers:new Set(),vaos:new Set(),framebuffers:new Set()};
  const limit=Math.min(gl.getParameter(gl.MAX_TEXTURE_SIZE),gl.getParameter(gl.MAX_RENDERBUFFER_SIZE),...gl.getParameter(gl.MAX_VIEWPORT_DIMS));
+ const atlasSize=Math.min(4096,2**Math.floor(Math.log2(gl.getParameter(gl.MAX_TEXTURE_SIZE))));
+ const packRenderer=createTexturePackRenderer(atlasSize,(x,y,{width,height,rgba})=>{
+  bindTexture(resources.replacement,5);
+  gl.texSubImage2D(gl.TEXTURE_2D,0,x,y,width,height,gl.RGBA,gl.UNSIGNED_BYTE,rgba);
+ },invalidate);
  function compile(type,source){
   const shader=gl.createShader(type);gl.shaderSource(shader,source);gl.compileShader(shader);
   if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS)){const error=gl.getShaderInfoLog(shader);gl.deleteShader(shader);throw Error('WebGL2 shader: '+error);}
@@ -43,6 +54,14 @@ export async function createWebGL2Renderer(canvas,onFailure,{onStatus=()=>{}}={}
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
   return {id,w,h};
  }
+ function replacementTexture(){
+  const size=pack ? atlasSize : 1;
+  gl.activeTexture(gl.TEXTURE0+5);
+  const target=texture(size,size);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  return target;
+ }
  function framebuffer(colors,depth=null){
   const f=gl.createFramebuffer();allocated.framebuffers.add(f);gl.bindFramebuffer(gl.FRAMEBUFFER,f);
   colors.forEach((t,i)=>gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0+i,gl.TEXTURE_2D,t.id,0));
@@ -61,19 +80,21 @@ export async function createWebGL2Renderer(canvas,onFailure,{onStatus=()=>{}}={}
    for(const [index,size,offset,integer] of [[0,2,0],[1,1,8],[2,3,12],[3,4,24],[4,4,40,true],[5,2,56,true]]){
     gl.enableVertexAttribArray(index);if(integer)gl.vertexAttribIPointer(index,size,gl.UNSIGNED_INT,64,offset);else gl.vertexAttribPointer(index,size,gl.FLOAT,false,64,offset);
    }
-   return {buffer,vao,capacity:0};
+   return {buffer,vao,capacity:0,pose:null,poseCapacity:0};
   });
   const emptyVao=gl.createVertexArray();allocated.vaos.add(emptyVao);
   for(const p of [compose,present]){gl.useProgram(p.program);gl.uniform1i(loc(p,'uData'),0);}
   gl.useProgram(present.program);gl.uniform1i(loc(present,'uLayer'),4);
-  gl.useProgram(poly.program);for(const [name,unit] of [['uTexram',1],['uLuma',2],['uXlat',3]])gl.uniform1i(loc(poly,name),unit);
+  gl.useProgram(poly.program);for(const [name,unit] of [['uTexram',1],['uLuma',2],['uXlat',3],['uReplacementImage',5]])gl.uniform1i(loc(poly,name),unit);
   gl.disable(gl.BLEND);gl.disable(gl.CULL_FACE);gl.disable(gl.DITHER);gl.pixelStorei(gl.UNPACK_ALIGNMENT,4);
+  const replacement=replacementTexture();
   gl.bindVertexArray(null);gl.bindFramebuffer(gl.FRAMEBUFFER,null);
   if(gl.getError()!==gl.NO_ERROR)throw Error('WebGL2 resource initialization failed.');
-  resources={poly,compose,present,data,texram,luma,xlat,back,front,layers,slots,emptyVao,target:null,color:null,depth:null};
+  resources={poly,compose,present,data,texram,luma,xlat,replacement,back,front,layers,slots,emptyVao,target:null,color:null,depth:null};
  }
  function invalidate(){uploadedModule=null;uploadedFrame=-1;uploadedHeap=null;layoutKey='';}
- function reset(){textureGeneration=-1;textureModule=null;displayKey='';tileOwner=null;tileHeap=null;versions.fill(0);metadata.fill(0xffffffff);pending=true;invalidate();}
+ function resetInterpolation(){geometry.reset();poseAvailable=false;invalidate();}
+ function reset(){textureGeneration=-1;textureModule=null;displayKey='';lastFrame=-1;tileOwner=null;tileHeap=null;versions.fill(0);metadata.fill(0xffffffff);pending=true;packRenderer.resetMatches();resetInterpolation();}
  function extent(){const dpr=globalThis.devicePixelRatio||1,w=Math.max(1,Math.round(canvas.clientWidth*dpr)),h=Math.max(1,Math.round(canvas.clientHeight*dpr)),ratio=Math.min(1,limit/Math.max(w,h));return [Math.max(1,Math.round(w*ratio)),Math.max(1,Math.round(h*ratio))];}
  function upload(target,unit,start,bytes){
   if(!bytes.byteLength)return;bindTexture(target,unit);
@@ -101,6 +122,7 @@ export async function createWebGL2Renderer(canvas,onFailure,{onStatus=()=>{}}={}
    const state=gl.clientWaitSync(f.sync,0,0);
    if(state===gl.WAIT_FAILED)throw Error('The WebGL2 graphics queue failed.');
    if(state===gl.TIMEOUT_EXPIRED)return true;
+   if(f.newFrame)completedFrames++;
    gl.deleteSync(f.sync);return false;
   });
  }
@@ -117,29 +139,42 @@ export async function createWebGL2Renderer(canvas,onFailure,{onStatus=()=>{}}={}
   for(const [kind,remove] of [['programs','deleteProgram'],['textures','deleteTexture'],['buffers','deleteBuffer'],['vaos','deleteVertexArray'],['framebuffers','deleteFramebuffer']]){for(const value of allocated[kind])gl[remove](value);allocated[kind].clear();}
   for(const f of flights)gl.deleteSync(f.sync);flights=[];resources=null;
  }
- function contextLost(event){event.preventDefault();lost=true;flights=[];resources=null;for(const values of Object.values(allocated))values.clear();reset();onStatus('WebGL2 · restoring graphics…');lossTimer=setTimeout(()=>{if(lost&&!disposed)onFailure('WebGL2 could not restore its graphics context. Reload the page.');},8000);}
+ function contextLost(event){event.preventDefault();lost=true;flights=[];resources=null;packRenderer.reset(null);for(const values of Object.values(allocated))values.clear();reset();onStatus('WebGL2 · restoring graphics…');lossTimer=setTimeout(()=>{if(lost&&!disposed)onFailure('WebGL2 could not restore its graphics context. Reload the page.');},8000);}
  function contextRestored(){
   if(disposed)return;clearTimeout(lossTimer);
-  try{ow=oh=width=height=0;initialize();reset();lost=false;onStatus('WebGL2');}catch(error){onFailure('WebGL2 recovery failed: '+error.message);}
+  try{ow=oh=width=height=0;initialize();packRenderer.reset(pack);reset();lost=false;onStatus('WebGL2');}catch(error){onFailure('WebGL2 recovery failed: '+error.message);}
  }
  try{initialize();reset();}catch(error){destroy();throw error;}
  canvas.addEventListener('webglcontextlost',contextLost);canvas.addEventListener('webglcontextrestored',contextRestored);
  return {
   backend:'webgl2',reset,
+  completedFrames(){if(!lost&&!disposed)poll();return completedFrames;},
+  interpolationStats:geometry.stats,resetInterpolation,
+  texturePackStats:packRenderer.stats,
+  setTexturePack(next){
+   if(disposed)return;
+   pack=next;
+   if(lost)return;
+   const old=resources.replacement.id;
+   resources.replacement=replacementTexture();
+   gl.deleteTexture(old);allocated.textures.delete(old);
+   packRenderer.reset(next);
+   invalidate();
+  },
   setNight(on,near=16,far=128,sky=0.12,options={}){const v=packNight(on,near,far,sky,options);if(v.some((x,i)=>x!==nightValues[i])){nightValues.set(v);invalidate();}},
   setHUDVisible(on){hudVisible=!!on;},
-  dispose(){disposed=true;clearTimeout(lossTimer);canvas.removeEventListener('webglcontextlost',contextLost);canvas.removeEventListener('webglcontextrestored',contextRestored);if(!lost)destroy();},
+  dispose(){disposed=true;packRenderer.reset(null);clearTimeout(lossTimer);canvas.removeEventListener('webglcontextlost',contextLost);canvas.removeEventListener('webglcontextrestored',contextRestored);if(!lost)destroy();},
   setEnhanced(on){enhanced=on;displayKey='';canvas.classList.toggle('enhanced',on);},
   setDrawDistance(level){drawDistance=level;enhanced=level>0;displayKey='';canvas.classList.toggle('enhanced',enhanced);},
   prepare(wasm){
    if(lost||disposed)return;const [w,h]=enhanced?extent():[496,384],key=`${enhanced}:${w}:${h}`;
    if(key!==displayKey){wasm._daytona_set_draw_distance(enhanced?drawDistance:0);wasm._daytona_set_display(Number(enhanced),w,enhanced?Math.min(h,Math.ceil(w*384/496)):h);displayKey=key;invalidate();}
   },
-  draw(wasm){
+  draw(wasm,phase=null){
    if(lost||disposed)return false;poll();if(flights.length>=3)return false;
    const frame=wasm._daytona_total_frames(),mem=wasm.HEAPU8;
    const [outW,outH]=enhanced?extent():[wasm._daytona_width(),wasm._daytona_height()];
-   if(flights.length&&wasm===uploadedModule&&frame===uploadedFrame&&mem.buffer===uploadedHeap&&outW===ow&&outH===oh)return false;
+   if(flights.length&&wasm===uploadedModule&&frame===uploadedFrame&&mem.buffer===uploadedHeap&&outW===ow&&outH===oh&&presentedAlpha===(poseAvailable?(phase??1):1))return false;
    if(!wasm._daytona_prepare_visual())throw Error('Could not prepare graphics for the latest game state.');
    updateNightPose(wasm,nightValues);
    resize(wasm._daytona_width(),wasm._daytona_height(),outW,outH);
@@ -158,8 +193,24 @@ export async function createWebGL2Renderer(canvas,onFailure,{onStatus=()=>{}}={}
     if(vertexSize){
      currentSlot=(currentSlot+1)%3;const slot=r.slots[currentSlot];gl.bindBuffer(gl.ARRAY_BUFFER,slot.buffer);
      if(vertexSize>slot.capacity){slot.capacity=Math.ceil(vertexSize/65536)*65536;gl.bufferData(gl.ARRAY_BUFFER,slot.capacity,gl.STREAM_DRAW);}
-     gl.bufferSubData(gl.ARRAY_BUFFER,0,heap.subarray(wasm._daytona_vertices_ptr(),wasm._daytona_vertices_ptr()+vertexSize));
-    }
+     const ptr=wasm._daytona_vertices_ptr();
+     if(phase===null)geometry.reset();
+     const previous=phase===null?null:geometry.capture(wasm,heap.subarray(ptr,ptr+vertexSize),frame,key);
+     poseAvailable=!!previous;
+     gl.bufferSubData(gl.ARRAY_BUFFER,0,packRenderer.vertices(wasm,ptr,vertexSize));
+     gl.bindVertexArray(slot.vao);
+     if(previous){
+      if(!slot.pose){slot.pose=gl.createBuffer();allocated.buffers.add(slot.pose);}
+      gl.bindBuffer(gl.ARRAY_BUFFER,slot.pose);
+      if(previous.byteLength>slot.poseCapacity){
+       slot.poseCapacity=Math.ceil(previous.byteLength/65536)*65536;
+       gl.bufferData(gl.ARRAY_BUFFER,slot.poseCapacity,gl.STREAM_DRAW);
+      }
+      gl.bufferSubData(gl.ARRAY_BUFFER,0,previous);
+      gl.enableVertexAttribArray(6);
+      gl.vertexAttribPointer(6,3,gl.FLOAT,false,12,0);
+     }else gl.disableVertexAttribArray(6);
+    }else{geometry.reset();poseAvailable=false;}
    }
    if(changed||key!==layoutKey){
     batchDraws.length=0;
@@ -174,12 +225,18 @@ export async function createWebGL2Renderer(canvas,onFailure,{onStatus=()=>{}}={}
    gl.useProgram(r.present.program);uniforms(r.present,top);gl.uniform4uiv(loc(r.present,'uControl'),metadata);gl.uniform1i(loc(r.present,'uFront'),0);bindTexture(r.back,4);bindTexture(r.data,0);gl.drawArrays(gl.TRIANGLES,0,3);
    if(vertexSize){
     gl.enable(gl.DEPTH_TEST);gl.depthMask(true);gl.depthFunc(gl.LESS);gl.enable(gl.SCISSOR_TEST);gl.useProgram(r.poly.program);uniforms(r.poly,top);gl.uniform2f(loc(r.poly,'uOutput'),ow,oh);
-    bindTexture(r.texram,1);bindTexture(r.luma,2);bindTexture(r.xlat,3);gl.bindVertexArray(r.slots[currentSlot].vao);
+    presentedAlpha=poseAvailable?(phase??1):1;
+    gl.uniform1f(loc(r.poly,'uGeometryAlpha'),presentedAlpha);
+    bindTexture(r.texram,1);bindTexture(r.luma,2);bindTexture(r.xlat,3);bindTexture(r.replacement,5);gl.bindVertexArray(r.slots[currentSlot].vao);
     for(let n=0;n<batchDraws.length;n+=6){gl.scissor(batchDraws[n],batchDraws[n+1],batchDraws[n+2],batchDraws[n+3]);gl.drawArrays(gl.TRIANGLES,batchDraws[n+5],batchDraws[n+4]);}
    }
    gl.disable(gl.SCISSOR_TEST);gl.disable(gl.DEPTH_TEST);gl.depthMask(false);gl.bindVertexArray(r.emptyVao);gl.useProgram(r.present.program);gl.uniform1i(loc(r.present,'uFront'),1);bindTexture(r.front,4);if(hudVisible)gl.drawArrays(gl.TRIANGLES,0,3);
    gl.bindFramebuffer(gl.READ_FRAMEBUFFER,r.target);gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER,null);gl.blitFramebuffer(0,0,ow,oh,0,0,ow,oh,gl.COLOR_BUFFER_BIT,gl.NEAREST);
-   const sync=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0);if(!sync)throw Error('Could not fence the WebGL2 presentation.');flights.push({sync});gl.flush();return true;
+   const alpha=vertexSize?presentedAlpha:1;
+   const newFrame=wasm!==lastFrameOwner || frame!==lastFrame || alpha!==lastFrameAlpha;
+   const sync=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0);if(!sync)throw Error('Could not fence the WebGL2 presentation.');
+   lastFrameOwner=wasm;lastFrame=frame;lastFrameAlpha=alpha;
+   flights.push({sync,newFrame});gl.flush();return true;
   }
  };
 }

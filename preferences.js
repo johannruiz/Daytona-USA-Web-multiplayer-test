@@ -1,12 +1,12 @@
 export const SETTINGS_ID='daytona-web-player-settings-v1';
-export const DEFAULT_SETTINGS=Object.freeze({vibrationEnabled:true,rumble:1,centring:0.05,forceFeedbackEnabled:false,forceFeedbackStrength:.2,forceFeedbackReverse:false,drawDistance:2,volume:1,uiVolume:1,joystickSensitivity:1,joystickDeadzone:.08,keyboardSensitivity:1,touchButtonScale:1,touchSteeringWidth:1.15});
+export const DEFAULT_SETTINGS=Object.freeze({vibrationEnabled:true,rumble:1,centring:0.05,forceFeedbackEnabled:false,forceFeedbackStrength:.2,forceFeedbackReverse:false,drawDistance:2,frameInterpolation:false,volume:1,uiVolume:1,joystickSensitivity:1,joystickDeadzone:.08,keyboardSensitivity:1,touchButtonScale:1,touchSteeringWidth:1.15});
 export function loadSettings(storage,{mobile=false}={}) {
   let saved;
   try {saved=JSON.parse(storage.getItem(SETTINGS_ID));}catch{}
   const result={...DEFAULT_SETTINGS,drawDistance:mobile?1:2};
   if(!saved || typeof saved!=='object')return result;
   if(typeof saved.vibrationEnabled==='boolean')result.vibrationEnabled=saved.vibrationEnabled;
-  for(const key of ['forceFeedbackEnabled','forceFeedbackReverse'])if(typeof saved[key]==='boolean')result[key]=saved[key];
+  for(const key of ['forceFeedbackEnabled','forceFeedbackReverse','frameInterpolation'])if(typeof saved[key]==='boolean')result[key]=saved[key];
   for(const key of ['rumble','centring','forceFeedbackStrength','volume','uiVolume']){
     if(typeof saved[key]==='number' && Number.isFinite(saved[key]))result[key]=Math.max(0,Math.min(1,saved[key]));
   }

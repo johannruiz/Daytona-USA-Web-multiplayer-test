@@ -3,28 +3,31 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#05070b"><title>Daytona USA · Private Multiplayer</title>
-  <link rel="stylesheet" href="style.css?v=53.8.59">
-  <link rel="stylesheet" href="host-console.css?v=53.8.59">
-  <link rel="stylesheet" href="controller-settings.css?v=53.8.59">
-  <link rel="stylesheet" href="input-settings.css?v=53.8.59">
-  <link rel="stylesheet" href="wheel-feedback.css?v=53.8.59">
-  <link rel="stylesheet" href="single-player.css?v=53.8.59">
-  <link rel="stylesheet" href="ui-consistency.css?v=53.8.59">
-  <link rel="stylesheet" href="menu-gamepad.css?v=53.8.59">
-  <link rel="stylesheet" href="race-standings.css?v=53.8.59">
-  <link rel="stylesheet" href="public-rooms.css?v=53.8.59">
-  <link rel="stylesheet" href="waiting-room.css?v=53.8.59">
-  <link rel="stylesheet" href="game-chat.css?v=53.8.59">
-  <link rel="stylesheet" href="lobby-layout.css?v=53.8.59">
-  <link rel="stylesheet" href="player-skins.css?v=53.8.59">
-  <link rel="stylesheet" href="spectator-menu.css?v=53.8.59">
-  <link rel="stylesheet" href="ui-motion.css?v=53.8.59">
+  <link rel="stylesheet" href="style.css?v=53.8.60">
+  <link rel="stylesheet" href="host-console.css?v=53.8.60">
+  <link rel="stylesheet" href="controller-settings.css?v=53.8.60">
+  <link rel="stylesheet" href="input-settings.css?v=53.8.60">
+  <link rel="stylesheet" href="wheel-feedback.css?v=53.8.60">
+  <link rel="stylesheet" href="single-player.css?v=53.8.60">
+  <link rel="stylesheet" href="ui-consistency.css?v=53.8.60">
+  <link rel="stylesheet" href="menu-gamepad.css?v=53.8.60">
+  <link rel="stylesheet" href="race-standings.css?v=53.8.60">
+  <link rel="stylesheet" href="public-rooms.css?v=53.8.60">
+  <link rel="stylesheet" href="waiting-room.css?v=53.8.60">
+  <link rel="stylesheet" href="game-chat.css?v=53.8.60">
+  <link rel="stylesheet" href="lobby-layout.css?v=53.8.60">
+  <link rel="stylesheet" href="player-skins.css?v=53.8.60">
+  <link rel="stylesheet" href="spectator-menu.css?v=53.8.60">
+  <link rel="stylesheet" href="ui-motion.css?v=53.8.60">
 </head>
 <body>
   <main class="arcade" aria-label="Daytona USA arcade">
     <div class="idle-scene" aria-hidden="true"><div class="horizon"></div><div class="track"></div><span class="track-number">41</span></div>
     <canvas id="screen" width="496" height="384" tabindex="-1" aria-label="Daytona USA game screen"></canvas>
-    <div class="fps" aria-label="Simulation frames per second"><span id="fps">—</span><span>SIM FPS</span></div>
+    <div class="fps">
+      <div aria-label="Simulation frequency"><span id="fps">—</span><span>Hz</span></div>
+      <div aria-label="New frames completed by the GPU per second"><span id="renderFps">—</span><span>FPS</span></div>
+    </div>
     <div class="race-network-hud"><div id="networkStatus" class="network-status" hidden aria-live="polite">Linking cabinets…</div><ol id="raceStandings" class="race-standings" hidden aria-label="Player race positions"></ol></div>
     <output id="diagnosticsHud" class="diagnostics-hud" hidden aria-label="Local performance diagnostics"></output>
     <nav class="arcade-tools" aria-label="Arcade controls">
@@ -204,6 +207,17 @@
             <label><input id="distance1" type="radio" name="drawDistance" value="1"><span><strong>1x <em id="distance1Default" hidden>Default</em></strong><small>Widescreen, native resolution and extended scenery.</small></span></label>
             <label><input id="distance2" type="radio" name="drawDistance" value="2" checked><span><strong>2x <em id="distance2Default">Default</em></strong><small>Widescreen with more distant scenery. Higher graphics load.</small></span></label>
           </fieldset>
+          <label class="setting-toggle" style="margin-top:14px">
+            <span>3D refresh interpolation <em class="experimental-badge">Experimental</em><small>Smooths 3D motion in demos and races with up to one arcade frame of presentation delay.</small></span>
+            <input id="frameInterpolation" type="checkbox">
+          </label>
+          <fieldset class="texture-pack-options">
+            <legend>Texture pack</legend>
+            <label for="texturePackInput">Import texture pack ZIP</label>
+            <input id="texturePackInput" type="file" accept=".zip,application/zip" aria-describedby="texturePackStatus">
+            <label><input id="texturePackEnabled" type="checkbox" disabled> Enable replacement</label>
+            <p id="texturePackStatus" role="status">Import a Daytona texture pack with a daytona.pat file and PNG images.</p>
+          </fieldset>
         </section>
         <section id="inputPanel" class="settings-panel" role="tabpanel" aria-labelledby="inputTab" hidden><div id="keyboardControls"></div></section>
         <section id="soundPanel" class="settings-panel" role="tabpanel" aria-labelledby="soundTab" hidden>
@@ -265,9 +279,9 @@
       </section>
     </div>
   </div>
-  <small id="buildVersion" class="build-version"><span>v53.8.59</span> · <time datetime="2026-10-31">31.10.26</time></small>
+  <small id="buildVersion" class="build-version"><span>v53.8.60</span> · <time datetime="2026-10-31">31.10.26</time></small>
   <div id="menuGamepadHints" class="menu-gamepad-hints" role="status" aria-label="Controller menu controls" hidden></div>
-  <script src="vendor/peerjs.min.js?v=53.8.59" defer></script><script src="daytona_engine.js?v=53.8.59" defer></script><script type="module" src="main.js?v=53.8.59"></script>
+  <script src="vendor/peerjs.min.js?v=53.8.60" defer></script><script src="daytona_engine.js?v=53.8.60" defer></script><script type="module" src="main.js?v=53.8.60"></script>
 </body>
 </html>
 

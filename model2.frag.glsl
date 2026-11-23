@@ -4,6 +4,7 @@ precision highp float;
 precision highp int;
 precision highp usampler2D;
 uniform usampler2D uTexram;
+uniform sampler2D uReplacementImage;
 uniform usampler2D uLuma;
 uniform usampler2D uXlat;
 uniform float uOutputHeight;
@@ -119,6 +120,27 @@ uint fetch_texel(uvec4 info,int level,int uin,int vin,bool trans){
  return lerp8(t0,t1,vf);
 }
 
+float replacementAxis(float value,bool mirror){
+ return mirror&&(int(floor(value))&1)!=0?1.0-fract(value):fract(value);
+}
+
+float replacementLight(uint mode,uint lb,uint pl){
+ float light=float(pl&254u)/255.0;
+ switch(mode){
+  case 1u:return light*1.10;
+  case 2u:case 3u:case 4u:{
+   float scale=mode==2u?2.0:mode==3u?1.50:1.30;
+   // ElSemi uploads the 6-bit luma table as 8-bit luminance.
+   uint translated=min(lumaram(lb+(pl>>1u))&65535u,63u)*4u;
+   return float(translated)/255.0*scale;
+  }
+  case 5u:return light*1.35;
+  case 6u:return light*1.36;
+  case 7u:return light*2.40;
+  default:return light*2.0;
+ }
+}
+
 void main(){
  uint flags=vInfo.x;
  if(((flags>>2u)&1u)!=0u){uvec2 p=uvec2(gl_FragCoord.x,uOutputHeight-gl_FragCoord.y);if(((p.x^p.y)&1u)==0u)discard;}
@@ -126,11 +148,30 @@ void main(){
  bool trans=renderer==3u;int maxlevel=int((flags>>12u)&31u);
  float z=1.0/vOz.x;int mml=-int(vMore.x)+fast_log2(z),level=clamp(mml>>7,0,maxlevel);
  int u=to_s32(vOz.y*z*256.0),v=to_s32(vOz.z*z*256.0);
- uint t=fetch_texel(vInfo,level,u,v,trans);
- if(mml>0&&level<maxlevel)t=lerp8(t,fetch_texel(vInfo,level+1,u,v,trans),uint((mml&127)<<1));
- else if(((flags>>7u)&1u)!=0u&&mml<0)t=lerp8(t,fetch_texel(vInfo,-1,u,v,trans),uint(min((-mml)>>((flags>>8u)&3u),127)));
- if(trans){if(t<0x00400000u)discard;t&=255u;}
  uint lb=vInfo.w&65535u,pl=vInfo.w>>16u;
+ uint t;
+ if(vColor.z<0.0){
+  uint replacement=uint(-vColor.z);
+  vec2 size=vec2(float(replacement>>4u),vColor.w);
+  float tw=float(32u<<((flags>>17u)&7u)),th=float(32u<<((flags>>20u)&7u));
+  vec2 uv=vec2(replacementAxis(float(u)/(256.0*tw),(flags&32u)!=0u),
+               replacementAxis(float(v)/(256.0*th),(flags&64u)!=0u));
+  vec2 pixel=vColor.xy+clamp(uv*size,vec2(0.5),size-vec2(0.5));
+  vec4 texel=textureLod(uReplacementImage,pixel/vec2(textureSize(uReplacementImage,0)),0.0);
+  uint mode=replacement&15u;
+  if(trans&&texel.a*(mode==5u?1.5:mode==6u||mode==7u?4.0:1.0)<0.5)discard;
+  if(mode!=0u){
+   vec4 result=vec4(clamp(texel.rgb*replacementLight(mode,lb,pl),0.0,1.0),1.0);
+   outColor=(flags&(1u<<23u))!=0u?night_hud(result,flags):night_world(result,vOz.x);
+   return;
+  }
+  t=uint(texel.r*240.0+0.5);
+ }else{
+  t=fetch_texel(vInfo,level,u,v,trans);
+  if(mml>0&&level<maxlevel)t=lerp8(t,fetch_texel(vInfo,level+1,u,v,trans),uint((mml&127)<<1));
+  else if(((flags>>7u)&1u)!=0u&&mml<0)t=lerp8(t,fetch_texel(vInfo,-1,u,v,trans),uint(min((-mml)>>((flags>>8u)&3u),127)));
+  if(trans){if(t<0x00400000u)discard;t&=255u;}
+ }
  uint luma=min(((lumaram(lb+(t>>1u))&255u)*pl/256u)&255u,63u),c=vMore.y;
  outColor=vec4(float(xlat(((c&31u)<<8u)+luma)),float(xlat(0x2000u+(((c>>5u)&31u)<<8u)+luma)),float(xlat(0x4000u+(((c>>10u)&31u)<<8u)+luma)),255.0)/255.0;
  if((flags&(1u<<23u))!=0u){outColor=night_hud(outColor,flags);return;}

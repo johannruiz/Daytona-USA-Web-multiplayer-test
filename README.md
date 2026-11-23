@@ -1,12 +1,20 @@
 # Daytona USA Web
 
-**Version in this release folder: v53.8.59 (October 31, 2026)**
+**Version in this release folder: v53.8.60 (November 22, 2026)**
 
 A community browser port of the original Daytona USA arcade game, based on [daytona-arcade-recomp](https://github.com/alphanu1/daytona-arcade-recomp). This release contains the browser frontend and a compiled WebAssembly engine. **Bring your own supported Daytona USA ROM ZIP**: no ROM or extracted proprietary game content is included.
 
 This is an independent project, not affiliated with or endorsed by SEGA.
 
-## Release 53.8.59
+## Release 53.8.60
+
+- Import Model 2 Emulator texture packs in **Settings → Graphics**. The pack stays in the browser, and both WebGPU and WebGL2 support replacement textures, including the water in Advanced.
+- Try **3D refresh interpolation** to smooth demos and races at the display refresh rate. This experimental option is off by default. The Expert bridge can still show a discontinuity.
+- The performance display reports simulation Hz and GPU-completed FPS separately.
+
+Online rooms require all players to reload to the same version.
+
+## Previous release 53.8.59
 
 - Circuit and transmission selectors start at the leftmost option; a held wheel must return to neutral before making a new selection.
 - Enable sticky, accelerated initials navigation in a one-person multiplayer room as well as standalone play.
@@ -17,6 +25,26 @@ Validation: 493 automated tests pass. A real ROM in a one-cabinet linked Chrome 
 
 
 ## Play locally
+
+Import a Model 2 Emulator texture pack ZIP under **Settings → Graphics → Texture pack**.
+This build reads `daytona.pat` and uses both Model 2 texture IDs to load matching PNG
+replacements for the supported arcade ROM. It supports the stf999 pack's modes
+0–7 and 14 on WebGPU and WebGL2. Modes 2–4 use ElSemi's 6-bit to 8-bit luminance
+conversion. The browser loads visible replacements on demand.
+Use **Enable replacement** to compare with the arcade textures. The ZIP stays local
+and the selection lasts until page reload.
+
+**Settings → Graphics → 3D refresh interpolation** is an experimental option for
+demos and races. The renderer matches 3D polygons by their mesh source, material and pose
+across consecutive arcade frames. It interpolates matched geometry at the
+browser's refresh cadence. Camera changes, skipped native frames and ambiguous
+matches fall back to the current native pose. Small unpaired faces can follow
+nearby geometry when its screen movement and depth agree. The simulation, audio and 2D HUD
+use their usual timing. Interpolation presents matched geometry up to one native
+frame behind, around 17 ms. The option is off by default.
+
+Beginner's animated billboard keeps its position in the interpolation history
+when the animation swaps models and texture slots.
 
 1. Install a recent version of Node.js.
 2. In the root of this release folder, run `node serve.js . 8080`.

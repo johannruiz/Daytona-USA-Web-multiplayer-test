@@ -6,6 +6,8 @@ struct Screen { size: vec2f, pad: vec2f, origin: vec2f, unused: vec2f }
 @group(0) @binding(3) var<storage, read> xlat: array<u32>;
 struct Night { base:vec4f, shape:vec4f, world:vec4f, sky:vec4f, lamp:vec4f, direction:vec4f, right:vec4f, up:vec4f, beam:vec4f }
 @group(0) @binding(4) var<uniform> night:Night;
+@group(0) @binding(5) var replacement_image:texture_2d<f32>;
+@group(0) @binding(6) var replacement_sampler:sampler;
 // Keep the original fade through 100%; blend into a long, continuous tail above it.
 fn night_fade(distance:f32,start:f32,end:f32)->f32 {
  let compact=smoothstep(start,end,distance);
@@ -54,7 +56,8 @@ fn night_hud(c:vec4f,flags:u32)->vec4f {
 }
 struct In {
  @location(0) pos: vec2f, @location(1) depth: f32, @location(2) oz: vec3f,
- @location(3) color: vec4f, @location(4) info: vec4u, @location(5) more: vec2u
+ @location(3) color: vec4f, @location(4) info: vec4u, @location(5) more: vec2u,
+ @location(6) previous: vec3f
 }
 struct Out {
  @builtin(position) pos: vec4f,
@@ -65,8 +68,17 @@ struct Out {
 }
 @vertex fn vs_poly(i: In) -> Out {
  var o: Out;
- o.pos=vec4f((i.pos.x-screen.pad.x)/screen.size.x*2.0-1.0,1.0-i.pos.y/screen.size.y*2.0,i.depth,1.0);
- o.oz=i.oz; o.color=i.color; o.info=i.info; o.more=i.more;
+ var position=i.pos;
+ var oz=i.oz;
+ let alpha=screen.unused.x;
+ if(alpha<1.0 && i.previous.z>0.0 && i.oz.x>0.0){
+  // Lerp in view space, then project. Keep this tick's material and Z order.
+  let denominator=mix(i.oz.x,i.previous.z,alpha);
+  position=mix(i.previous.xy,i.pos,alpha*i.previous.z/denominator);
+  oz*=i.previous.z/denominator;
+ }
+ o.pos=vec4f((position.x-screen.pad.x)/screen.size.x*2.0-1.0,1.0-position.y/screen.size.y*2.0,i.depth,1.0);
+ o.oz=oz; o.color=i.color; o.info=i.info; o.more=i.more;
  return o;
 }
 const log_table=array<u32,128>(0,2,5,8,11,14,16,19,22,25,27,30,33,35,38,40,43,46,48,51,53,56,58,61,63,65,68,70,73,75,77,80,82,84,87,89,91,93,96,98,100,102,104,106,109,111,113,115,117,119,121,123,125,127,129,132,134,136,138,140,141,143,145,147,149,151,153,155,157,159,161,162,164,166,168,170,172,173,175,177,179,181,182,184,186,188,189,191,193,194,196,198,200,201,203,205,206,208,209,211,213,214,216,218,219,221,222,224,225,227,229,230,232,233,235,236,238,239,241,242,244,245,247,248,250,251,253,254);
@@ -133,6 +145,28 @@ fn fetch_texel(info:vec4u,level:i32,uin:i32,vin:i32,trans:bool)->u32 {
  return lerp8(t0,t1,vf);
 }
 
+fn replacement_axis(value:f32,mirror:bool)->f32 {
+ let tile=floor(value);
+ return select(fract(value),1.0-fract(value),mirror && (i32(tile)&1)!=0);
+}
+
+fn replacement_light(mode:u32,lb:u32,pl:u32)->f32 {
+ let light=f32(pl&254u)/255.0;
+ switch mode {
+  case 1u: {return light*1.10;}
+  case 2u,3u,4u: {
+   let scale=select(select(1.30,1.50,mode==3u),2.0,mode==2u);
+   // ElSemi uploads the 6-bit luma table as 8-bit luminance.
+   let translated=min(lumaram[lb+(pl>>1u)]&65535u,63u)*4u;
+   return f32(translated)/255.0*scale;
+  }
+  case 5u: {return light*1.35;}
+  case 6u: {return light*1.36;}
+  case 7u: {return light*2.40;}
+  default: {return light*2.0;}
+ }
+}
+
 @fragment fn ps_poly(i:Out)->@location(0) vec4f {
  let flags=i.info.x;
  if(((flags>>2u)&1u)!=0u){let p=vec2u(i.pos.xy);if(((p.x^p.y)&1u)==0u){discard;}}
@@ -142,11 +176,31 @@ fn fetch_texel(info:vec4u,level:i32,uin:i32,vin:i32,trans:bool)->u32 {
  let z=1.0/i.oz.x;let mml= -bitcast<i32>(i.more.x)+fast_log2(z);
  let level=clamp(mml>>7u,0,maxlevel);
  let u=to_s32(i.oz.y*z*256.0);let v=to_s32(i.oz.z*z*256.0);
- var t=fetch_texel(i.info,level,u,v,trans);
- if(mml>0 && level<maxlevel){t=lerp8(t,fetch_texel(i.info,level+1,u,v,trans),u32((mml&127)<<1u));}
- else if(((flags>>7u)&1u)!=0u && mml<0){t=lerp8(t,fetch_texel(i.info,-1,u,v,trans),u32(min((-mml)>>((flags>>8u)&3u),127)));}
- if(trans){if(t<0x00400000u){discard;}t&=255u;}
  let lb=i.info.w&65535u;let pl=i.info.w>>16u;
+ var t:u32;
+ if(i.color.z<0.0){
+  let replacement=u32(-i.color.z);
+  let size=vec2f(f32(replacement>>4u),i.color.w);
+  let tw=f32(32u<<((flags>>17u)&7u));
+  let th=f32(32u<<((flags>>20u)&7u));
+  let uv=vec2f(replacement_axis(f32(u)/(256.0*tw),(flags&32u)!=0u),
+               replacement_axis(f32(v)/(256.0*th),(flags&64u)!=0u));
+  let pixel=i.color.xy+clamp(uv*size,vec2f(0.5),size-vec2f(0.5));
+  let texel=textureSampleLevel(replacement_image,replacement_sampler,pixel/vec2f(textureDimensions(replacement_image)),0.0);
+  let mode=replacement&15u;
+  if(trans && texel.a*select(1.0,select(4.0,1.5,mode==5u),mode>=5u&&mode<=7u)<0.5){discard;}
+  if(mode!=0u){
+   let result=vec4f(clamp(texel.rgb*replacement_light(mode,lb,pl),vec3f(0.0),vec3f(1.0)),1.0);
+   if((flags&(1u<<23u))!=0u){return night_hud(result,flags);}
+   return night_world(result,i.oz.x,i.pos.xy);
+  }
+  t=u32(texel.r*240.0+0.5);
+ }else{
+  t=fetch_texel(i.info,level,u,v,trans);
+  if(mml>0 && level<maxlevel){t=lerp8(t,fetch_texel(i.info,level+1,u,v,trans),u32((mml&127)<<1u));}
+  else if(((flags>>7u)&1u)!=0u && mml<0){t=lerp8(t,fetch_texel(i.info,-1,u,v,trans),u32(min((-mml)>>((flags>>8u)&3u),127)));}
+  if(trans){if(t<0x00400000u){discard;}t&=255u;}
+ }
  let luma=min(((lumaram[lb+(t>>1u)]&255u)*pl/256u)&255u,63u);
  let c=i.more.y;
  let result=vec4f(f32(xlat[((c&31u)<<8u)+luma]),f32(xlat[0x2000u+(((c>>5u)&31u)<<8u)+luma]),f32(xlat[0x4000u+(((c>>10u)&31u)<<8u)+luma]),255.0)/255.0;

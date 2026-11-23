@@ -18,8 +18,9 @@ export class SimulationClock {
  stop(){this.active=false;this.generation++;this.cancelTimer();}
  queue(delay){this.cancelTimer();const generation=this.generation,ticket=this.ticket;this.timer=this.schedule(()=>{if(!this.active||generation!==this.generation||ticket!==this.ticket)return;this.timer=null;this.pump();},delay);}
  present(timestamp=this.now()){
-  if(!this.active)return;
+  if(!this.active)return 1;
   this.cancelTimer();this.lastPresentation=this.now();this.pump(timestamp);
+  return Math.min(1,Math.max(0,(this.lagMs-Math.max(0,this.lastTime-timestamp))/this.stepMs));
  }
  pump(at=this.now()){
   const generation=this.generation;

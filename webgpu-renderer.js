@@ -1,6 +1,8 @@
-import {packNight,updateNightPose} from './night-settings.js?v=53.8.59';
+import {packNight,updateNightPose} from './night-settings.js?v=53.8.60';
 // WebGPU Model 2 polygons surrounded by GPU-composed System-24 layers.
-import {createGpuLayers} from './gpu-layers.js?v=53.8.59';
+import {createGpuLayers} from './gpu-layers.js?v=53.8.60';
+import {createTexturePackRenderer} from './texture-pack.js?v=53.8.60';
+import {createGeometryInterpolation} from './geometry-interpolation.js?v=53.8.60';
 
 export async function createWebGPURenderer(canvas, onFailure) {
   if (!globalThis.isSecureContext || !navigator.gpu)
@@ -17,7 +19,7 @@ export async function createWebGPURenderer(canvas, onFailure) {
   if (!context) throw Error('Could not create the WebGPU context.');
   const format = navigator.gpu.getPreferredCanvasFormat();
   context.configure({device, format, alphaMode:'opaque'});
-  const response = await fetch(new URL('./model2.wgsl?v=53.8.59', import.meta.url));
+  const response = await fetch(new URL('./model2.wgsl?v=53.8.60', import.meta.url));
   if (!response.ok) throw Error('Could not load model2.wgsl.');
   const modelShader = device.createShaderModule({label:'Model 2',code:await response.text()});
   for (const shader of [modelShader]) {
@@ -33,7 +35,8 @@ export async function createWebGPURenderer(canvas, onFailure) {
       {shaderLocation:2,offset:12,format:'float32x3'},
       {shaderLocation:3,offset:24,format:'float32x4'},
       {shaderLocation:4,offset:40,format:'uint32x4'},
-      {shaderLocation:5,offset:56,format:'uint32x2'}]}]},
+      {shaderLocation:5,offset:56,format:'uint32x2'}]},
+      {arrayStride:12,attributes:[{shaderLocation:6,offset:0,format:'float32x3'}]}]},
     fragment:{module:modelShader,entryPoint:'ps_poly',targets:[{format}]},
     primitive:{topology:'triangle-list',cullMode:'none'},
     depthStencil:{format:'depth32float',depthWriteEnabled:true,depthCompare:'less'}
@@ -46,15 +49,29 @@ export async function createWebGPURenderer(canvas, onFailure) {
   const texram = buffer(0x400000,GPUBufferUsage.STORAGE);
   const luma = buffer(0x20000,GPUBufferUsage.STORAGE);
   const xlat = buffer(0x6000*4,GPUBufferUsage.STORAGE);
-  const polyGroup = device.createBindGroup({layout:polyPipeline.getBindGroupLayout(0),entries:
-    [screen,texram,luma,xlat,night].map((b,binding)=>({binding,resource:{buffer:b}}))});
+  const atlasSize=4096;
+  const packSampler = device.createSampler({magFilter:'linear',minFilter:'linear'});
+  const makePackTexture = (width,height) => device.createTexture({size:[width,height],format:'rgba8unorm',
+    usage:GPUTextureUsage.TEXTURE_BINDING|GPUTextureUsage.COPY_DST});
+  let packTexture = makePackTexture(1,1);
+  const packRenderer=createTexturePackRenderer(atlasSize,(x,y,{width,height,rgba})=>{
+    device.queue.writeTexture({texture:packTexture,origin:[x,y]},rgba,{bytesPerRow:width*4},[width,height]);
+  },invalidate);
+  const makePolyGroup = () => device.createBindGroup({layout:polyPipeline.getBindGroupLayout(0),entries:[
+    ...[screen,texram,luma,xlat,night].map((b,binding)=>({binding,resource:{buffer:b}})),
+    {binding:5,resource:packTexture.createView()}, {binding:6,resource:packSampler},
+  ]});
+  let polyGroup = makePolyGroup();
   const validation=await device.popErrorScope();
   if(validation){disposed=true;device.destroy();throw Error('WebGPU initialization: '+validation.message);}
   let vertexBuffer=null, vertexCapacity=0, depth=null;
+  const geometry=createGeometryInterpolation();
+  let poseBuffer=null,poseCapacity=0,poseAvailable=false,presentedAlpha=1;
   let width=0,height=0,outputWidth=0,outputHeight=0,textureGeneration=-1;
   let uploadedModule=null,uploadedFrame=-1,uploadedHeap=null,layoutKey='',textureModule=null;
   let vertexSize=0,batchDraws=[];
   let inFlight=0;
+  let completedFrames=0,lastFrameOwner=null,lastFrame=-1,lastFrameAlpha=1;
   const screenValues=new Float32Array(8);
   let hudVisible=true,enhanced=false,drawDistance=1,displayKey='';
   function invalidate() {
@@ -77,11 +94,25 @@ export async function createWebGPURenderer(canvas, onFailure) {
   }
   return {
     backend:'webgpu',
+    completedFrames:()=>completedFrames,
+    interpolationStats:geometry.stats,
+    resetInterpolation(){geometry.reset();poseAvailable=false;invalidate();},
+    texturePackStats:packRenderer.stats,
+    setTexturePack(next) {
+      if(disposed)return;
+      const size=next ? atlasSize : 1;
+      const texture=makePackTexture(size,size);
+      packTexture.destroy();
+      packTexture=texture;
+      packRenderer.reset(next);
+      polyGroup=makePolyGroup();
+      invalidate();
+    },
     setNight(on,near=16,far=128,sky=0.12,options={}){const v=packNight(on,near,far,sky,options);if(v.some((x,i)=>x!==nightValues[i])){nightValues.set(v);device.queue.writeBuffer(night,0,nightValues);invalidate();}},
     setHUDVisible(on){hudVisible=!!on;},
     attach(target){const next=target.getContext('webgpu');if(!next)throw Error('Could not attach the WebGPU canvas.');next.configure({device,format,alphaMode:'opaque'});context.unconfigure();context=next;canvas=target;},
-    dispose(){disposed=true;context.unconfigure();device.destroy();},
-    reset() {textureGeneration=-1;displayKey='';layers.reset();invalidate();},
+    dispose(){disposed=true;packRenderer.reset(null);context.unconfigure();device.destroy();},
+    reset() {textureGeneration=-1;displayKey='';lastFrame=-1;geometry.reset();poseAvailable=false;packRenderer.resetMatches();layers.reset();invalidate();},
     setEnhanced(on) {enhanced=on;displayKey='';canvas.classList.toggle('enhanced',on);},
     setDrawDistance(level) {drawDistance=level;enhanced=level>0;displayKey='';canvas.classList.toggle('enhanced',enhanced);},
     prepare(wasm) {
@@ -95,7 +126,7 @@ export async function createWebGPURenderer(canvas, onFailure) {
         wasm._daytona_set_display(Number(enhanced),w,gameHeight);displayKey=key;invalidate();
       }
     },
-    draw(wasm) {
+    draw(wasm, phase=null) {
       // A small bounded queue tolerates delayed completion callbacks without
       // blocking RAF. Pending repeats below never consume another slot.
       if(inFlight>=3)return false;
@@ -104,7 +135,7 @@ export async function createWebGPURenderer(canvas, onFailure) {
       // the queue can occupy the slot needed by the next actual game step.
       if(inFlight&&wasm===uploadedModule&&frame===uploadedFrame&&wasm.HEAPU8.buffer===uploadedHeap){
         const [ow,oh]=enhanced?extent():[width,height];
-        if(ow===outputWidth&&oh===outputHeight)return false;
+        if(ow===outputWidth&&oh===outputHeight&&presentedAlpha===(poseAvailable?(phase??1):1))return false;
       }
       if(!wasm._daytona_prepare_visual())throw Error('Could not prepare graphics for the latest game state.');
       if(updateNightPose(wasm,nightValues))device.queue.writeBuffer(night,0,nightValues);
@@ -120,10 +151,6 @@ export async function createWebGPURenderer(canvas, onFailure) {
       // Reset, module replacement, heap growth and display changes invalidate
       // the cache even when the frame counter is unchanged or restarts.
       const dataChanged=wasm!==uploadedModule || frame!==uploadedFrame || mem.buffer!==uploadedHeap;
-      if(layoutChanged){
-        screenValues.set([viewWidth,h,offset,scale,0,top,0,0]);
-        device.queue.writeBuffer(screen,0,screenValues);
-      }
       if(dataChanged){
         const view=(ptr,size)=>mem.subarray(ptr,ptr+size);
         layers.update(wasm);
@@ -139,7 +166,26 @@ export async function createWebGPURenderer(canvas, onFailure) {
         vertexSize=wasm._daytona_vertices_count()*64;
         if(vertexSize>vertexCapacity){vertexBuffer?.destroy();vertexCapacity=Math.ceil(vertexSize/65536)*65536;
           vertexBuffer=buffer(vertexCapacity,GPUBufferUsage.VERTEX);}
-        if(vertexSize)device.queue.writeBuffer(vertexBuffer,0,view(wasm._daytona_vertices_ptr(),vertexSize));
+        if(vertexSize){
+          const ptr=wasm._daytona_vertices_ptr();
+          if(phase===null)geometry.reset();
+          const previous=phase===null ? null : geometry.capture(wasm,view(ptr,vertexSize),frame,key);
+          poseAvailable=!!previous;
+          if(previous){
+            if(previous.byteLength>poseCapacity){
+              poseBuffer?.destroy();poseCapacity=Math.ceil(previous.byteLength/65536)*65536;
+              poseBuffer=buffer(poseCapacity,GPUBufferUsage.VERTEX);
+            }
+            device.queue.writeBuffer(poseBuffer,0,previous);
+          }
+          device.queue.writeBuffer(vertexBuffer,0,packRenderer.vertices(wasm,ptr,vertexSize));
+        }else{geometry.reset();poseAvailable=false;}
+      }
+      const alpha=poseAvailable?(phase??1):1;
+      if(layoutChanged || alpha!==presentedAlpha){
+        screenValues.set([viewWidth,h,offset,scale,0,top,alpha,0]);
+        device.queue.writeBuffer(screen,0,screenValues);
+        presentedAlpha=alpha;
       }
       if(dataChanged || layoutChanged){
         batchDraws.length=0;
@@ -164,14 +210,20 @@ export async function createWebGPURenderer(canvas, onFailure) {
       layers.back(pass);
       if(vertexSize){
         pass.setPipeline(polyPipeline);pass.setBindGroup(0,polyGroup);pass.setVertexBuffer(0,vertexBuffer);
+        pass.setVertexBuffer(1,poseAvailable?poseBuffer:vertexBuffer);
         for(let n=0;n<batchDraws.length;n+=6){
           pass.setScissorRect(batchDraws[n],batchDraws[n+1],batchDraws[n+2],batchDraws[n+3]);
           pass.draw(batchDraws[n+4],1,batchDraws[n+5]);
         }
       }
       pass.setScissorRect(0,0,ow,oh);if(hudVisible)layers.front(pass);
+      const newFrame=wasm!==lastFrameOwner || frame!==lastFrame || alpha!==lastFrameAlpha;
       pass.end();device.queue.submit([encoder.finish()]);inFlight++;
-      device.queue.onSubmittedWorkDone().then(()=>{inFlight--;},error=>{inFlight--;onFailure('The graphics queue failed: '+error.message);});
+      lastFrameOwner=wasm;lastFrame=frame;lastFrameAlpha=alpha;
+      device.queue.onSubmittedWorkDone().then(()=>{
+        inFlight--;
+        if(newFrame&&!disposed)completedFrames++;
+      },error=>{inFlight--;onFailure('The graphics queue failed: '+error.message);});
       return true;
     }
   };

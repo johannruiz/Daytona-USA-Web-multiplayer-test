@@ -1,41 +1,42 @@
-import {ArcadeSelection} from './arcade-selection.js?v=53.8.59';
-import {mountWheelFeedback} from './wheel-feedback-ui.js?v=53.8.59';
-import {wheelMayDrive} from './wheel-force-feedback.js?v=53.8.59';
-import {createEnvironment} from './environment.js?v=53.8.59';
-import {SpectatorService,spectatorConfig} from './spectator-service.js?v=53.8.59';
-import {mountSpectatorControls} from './spectator-controls.js?v=53.8.59';
-import {createRoomArrivals} from './room-arrivals.js?v=53.8.59';
-import {createSkinPreviews} from './skin-previews.js?v=53.8.59';
-import {createRoomSystemAlerts} from './room-system-alerts.js?v=53.8.59';
-import {createROMStore,createROMMemory} from './rom-memory.js?v=53.8.59';
-import {mountGameChat} from './game-chat.js?v=53.8.59';
-import {startAnalytics} from './firebase-client.js?v=53.8.59';
-import {LocalRaceReporter,applyNativeOrder} from './race-authority.js?v=53.8.59';
-import {mountRaceStandings} from './race-standings.js?v=53.8.59';
-import {createGamepadHome} from './gamepad-home.js?v=53.8.59';
-import {protectTouchSurface} from './touch-guard.js?v=53.8.59';
-import {createKeyboardControls} from './keyboard-controls.js?v=53.8.59';
-import {SimulationClock} from './simulation-clock.js?v=53.8.59';
-import {SourceTimeline,NativeStateInbox} from './link-timing.js?v=53.8.59';
-import {linkIdForSeat} from './central-link.js?v=53.8.59';
-import {createLobbySound} from './lobby-sound.js?v=53.8.59';
-import { mountDiagnostics } from './diagnostics.js?v=53.8.59';
-import { mountRoomDiagnostics } from './room-diagnostics.js?v=53.8.59';
-import {createControllerControls} from './controller-controls.js?v=53.8.59';
-import { createRenderer } from './renderer.js?v=53.8.59';
-import {mountGraphicsAPISettings} from './graphics-api-settings.js?v=53.8.59';
-import {mountMenuGamepad} from './menu-gamepad.js?v=53.8.59';
-import { restoreNVRAM, STORAGE_ID,usableCabinetEEPROM } from './nvram.js?v=53.8.59';
-import { createTouchControls } from './touch.js?v=53.8.59';
-import { createGamepadRumble } from './haptics.js?v=53.8.59';
-import { loadSettings, saveSettings } from './preferences.js?v=53.8.59';
-import { createWheelControls } from './wheel-controls.js?v=53.8.59';
-import { Multiplayer } from './multiplayer.js?v=53.8.59';
-import { createRoomUI } from './room-ui.js?v=53.8.59';
-import { mountHostConsole } from './host-console.js?v=53.8.59';
-import { raceOptionsMask,prepareCabinet,ensureDeluxeCabinet } from './room-settings.js?v=53.8.59';
-import {prepareSingleCabinet,sameSingleSettings} from './single-player-settings.js?v=53.8.59';
-import {createSinglePlayerUI} from './single-player-ui.js?v=53.8.59';
+import {ArcadeSelection} from './arcade-selection.js?v=53.8.60';
+import {mountWheelFeedback} from './wheel-feedback-ui.js?v=53.8.60';
+import {wheelMayDrive} from './wheel-force-feedback.js?v=53.8.60';
+import {createEnvironment} from './environment.js?v=53.8.60';
+import {SpectatorService,spectatorConfig} from './spectator-service.js?v=53.8.60';
+import {mountSpectatorControls} from './spectator-controls.js?v=53.8.60';
+import {createRoomArrivals} from './room-arrivals.js?v=53.8.60';
+import {createSkinPreviews} from './skin-previews.js?v=53.8.60';
+import {createRoomSystemAlerts} from './room-system-alerts.js?v=53.8.60';
+import {createROMStore,createROMMemory} from './rom-memory.js?v=53.8.60';
+import {mountGameChat} from './game-chat.js?v=53.8.60';
+import {startAnalytics} from './firebase-client.js?v=53.8.60';
+import {LocalRaceReporter,applyNativeOrder} from './race-authority.js?v=53.8.60';
+import {mountRaceStandings} from './race-standings.js?v=53.8.60';
+import {createGamepadHome} from './gamepad-home.js?v=53.8.60';
+import {protectTouchSurface} from './touch-guard.js?v=53.8.60';
+import {createKeyboardControls} from './keyboard-controls.js?v=53.8.60';
+import {SimulationClock} from './simulation-clock.js?v=53.8.60';
+import {SourceTimeline,NativeStateInbox} from './link-timing.js?v=53.8.60';
+import {linkIdForSeat} from './central-link.js?v=53.8.60';
+import {createLobbySound} from './lobby-sound.js?v=53.8.60';
+import { mountDiagnostics } from './diagnostics.js?v=53.8.60';
+import { mountRoomDiagnostics } from './room-diagnostics.js?v=53.8.60';
+import {createControllerControls} from './controller-controls.js?v=53.8.60';
+import { createRenderer } from './renderer.js?v=53.8.60';
+import { loadTexturePack } from './texture-pack.js?v=53.8.60';
+import {mountGraphicsAPISettings} from './graphics-api-settings.js?v=53.8.60';
+import {mountMenuGamepad} from './menu-gamepad.js?v=53.8.60';
+import { restoreNVRAM, STORAGE_ID,usableCabinetEEPROM } from './nvram.js?v=53.8.60';
+import { createTouchControls } from './touch.js?v=53.8.60';
+import { createGamepadRumble } from './haptics.js?v=53.8.60';
+import { loadSettings, saveSettings } from './preferences.js?v=53.8.60';
+import { createWheelControls } from './wheel-controls.js?v=53.8.60';
+import { Multiplayer } from './multiplayer.js?v=53.8.60';
+import { createRoomUI } from './room-ui.js?v=53.8.60';
+import { mountHostConsole } from './host-console.js?v=53.8.60';
+import { raceOptionsMask,prepareCabinet,ensureDeluxeCabinet } from './room-settings.js?v=53.8.60';
+import {prepareSingleCabinet,sameSingleSettings} from './single-player-settings.js?v=53.8.60';
+import {createSinglePlayerUI} from './single-player-ui.js?v=53.8.60';
 // Daytona USA browser host. The wasm module is the original recomp game's
 // native game loop, not a JavaScript reconstruction of Daytona.
 const $ = (id) => document.getElementById(id);
@@ -43,16 +44,56 @@ const ui = {
   input: $('romInput'), dropzone: $('dropzone'), metadata: $('romMeta'),
   start: $('startBtn'), sound: $('soundBtn'),
   fullscreen: $('fullscreenBtn'), canvas: $('screen'), overlay: $('overlay'),
-  message: $('message'), status: $('status'), fps: $('fps'),
+  message: $('message'), status: $('status'), fps: $('fps'), renderFps: $('renderFps'),
   menu: $('menuBtn'), close: $('closeBtn'), fileLabel: $('fileLabel'), startLabel: $('startLabel')
 };
 let wasm = null, renderer = null, started = false, running = false;
 let engineReady = null, engineStartupError = '';
+let texturePack = null;
+const texturePackInput = $('texturePackInput');
+const texturePackEnabled = $('texturePackEnabled');
+const texturePackStatus = $('texturePackStatus');
+function showTexturePackStatus() {
+  const state=texturePackEnabled.checked?'enabled':'disabled';
+  const skipped=texturePack.skipped ? ` · ${texturePack.skipped} unavailable` : '';
+  const duplicates=texturePack.duplicates ? ` · ${texturePack.duplicates} duplicate ignored` : '';
+  texturePackStatus.textContent=`${texturePack.count} texture mappings ${state}${skipped}${duplicates}.`;
+}
+texturePackInput.addEventListener('change', async () => {
+  const file = texturePackInput.files[0];
+  if (!file) return;
+  texturePackInput.disabled = true;
+  texturePackEnabled.disabled = true;
+  texturePackStatus.textContent = 'Reading texture pack…';
+  try {
+    await engineReady;
+    if (!renderer) throw Error('The graphics engine is unavailable.');
+    const next = await loadTexturePack(file);
+    renderer.setTexturePack(next);
+    texturePack = next;
+    texturePackEnabled.checked = true;
+    showTexturePackStatus();
+  } catch (error) {
+    const previous = texturePack ? ' Previous texture pack kept.' : '';
+    texturePackStatus.textContent = error.message + previous;
+  } finally {
+    texturePackInput.value = '';
+    texturePackInput.disabled = false;
+    texturePackEnabled.disabled = !texturePack;
+  }
+});
+texturePackEnabled.addEventListener('change', () => {
+  if (!texturePack || !renderer) return;
+  renderer.setTexturePack(texturePackEnabled.checked ? texturePack : null);
+  showTexturePackStatus();
+});
 let simulationClock=null;
 let ctxAudio = null, audioGain = null, uiAudioGain = null, audioNext = 0;
 const audioSources=new Set();
 let soundMuted = false;
-let lastTime = 0, lagMs = 0, statTime = performance.now(), rendered = 0, simulated = 0;
+let lastTime = 0, lagMs = 0, statTime = performance.now(), lastCompletedFrames = 0, simulated = 0;
+let cameraButtons=0;
+let interpolationScene=null;
 const FIXED_MS = 1000 / (16000000 / (656 * 424));
 const held = new Set();
 let currentGear = 1;
@@ -160,6 +201,7 @@ function syncSettings(){
     $(input).disabled=(key==='rumble' || key==='centring') && !settings.vibrationEnabled;
   }
   for(const radio of document.querySelectorAll('[name="drawDistance"]'))radio.checked=Number(radio.value)===settings.drawDistance;
+  $('frameInterpolation').checked=settings.frameInterpolation;
   $('distance1Default').hidden=!mobileDevice;$('distance2Default').hidden=mobileDevice;
   if(audioGain)audioGain.gain.setTargetAtTime(settings.volume,ctxAudio.currentTime,0.025);
   if(uiAudioGain)uiAudioGain.gain.setTargetAtTime(settings.uiVolume,ctxAudio.currentTime,.025);
@@ -172,6 +214,10 @@ for(const id of ['vibrationEnabled','settingsVibrationEnabled'])$(id).addEventLi
 for(const [id,key] of [['rumbleIntensity','rumble'],['centringIntensity','centring'],['volumeIntensity','volume'],['uiVolumeIntensity','uiVolume'],['joystickSensitivity','joystickSensitivity'],['joystickDeadzone','joystickDeadzone']])
   $(id).addEventListener('input',event=>changeSetting(key,Number(event.target.value)/100));
 for(const radio of document.querySelectorAll('[name="drawDistance"]'))radio.addEventListener('change',event=>{if(event.target.checked)changeSetting('drawDistance',Number(event.target.value));});
+$('frameInterpolation').addEventListener('change',event=>{
+  renderer?.resetInterpolation();
+  changeSetting('frameInterpolation',event.target.checked);
+});
 syncSettings();
 const settingsTabs=[...document.querySelectorAll('#settingsModal > .settings-tabs [role="tab"]')];
 function selectSettingsTab(tab,focus=false){
@@ -395,6 +441,9 @@ function simulateStep(now){
   const selectionState=wasm._daytona_selection_state?.()||0;
   const i=inputs(!!selectionState);
   i.steer=arcadeSelection.read(i.steer,selectionState,FIXED_MS/1000);
+  const camera=i.buttons&0xf0;
+  if(settings.frameInterpolation && camera && camera!==cameraButtons)renderer?.resetInterpolation();
+  cameraButtons=camera;
   if(diagnostics.collecting)wasm._daytona_probe_reset();
   const stepBegin=performance.now();
   let replayBytes=null;
@@ -443,7 +492,13 @@ simulationClock=new SimulationClock({
  step:simulateStep,
  onState(state){
   lagMs=state.lagMs;lastTime=state.lastTime;
-  if(running&&lastTime-statTime>1000){ui.fps.textContent=String(Math.round(simulated*1000/(lastTime-statTime)));rendered=0;simulated=0;statTime=lastTime;}
+  if(running&&lastTime-statTime>1000){
+    const seconds=(lastTime-statTime)/1000;
+    ui.fps.textContent=String(Math.round(simulated/seconds));
+    const completedFrames=renderer.completedFrames();
+    ui.renderFps.textContent=String(Math.round((completedFrames-lastCompletedFrames)/seconds));
+    lastCompletedFrames=completedFrames;simulated=0;statTime=lastTime;
+  }
  },
  onError:error=>failure(error.message||String(error))
 });
@@ -454,11 +509,18 @@ function frame(now) {
   if(!running||!wasm){environment.pause();updateDevices(now);diagnostics.update(false);wheelFeedback.stop({force:false});rumble.update(feedbackGamepad(),0,0,now);return;}
   // Consume due steps immediately before presenting. The same clock has a
   // timer fallback for missing refreshes, without a second simulation loop.
-  simulationClock.present(now);
+  const phase=simulationClock.present(now);
   if(!running)return;
   environment.update(now);
   if(wasm._daytona_total_frames()>0){
-    try{if(renderer.draw(wasm)){rendered++;diagnostics.draw();}}
+    const scene=settings.frameInterpolation ? (wasm._daytona_spectator_world_phase?.()&255) : null;
+    try{
+      if(scene!==interpolationScene){
+        renderer.resetInterpolation();
+        interpolationScene=scene;
+      }
+      if(renderer.draw(wasm,scene===null?null:phase))diagnostics.draw();
+    }
     catch(err){failure(err.message);}
   }
 }
@@ -591,7 +653,7 @@ async function resumeGame() {
   wheelControls.resetEdges();controllerControls.resetEdges();controllerControls.cancel();
   const keepLinkedClock=room.active&&running;
   started=true;running=true;held.clear();keyboardControls.reset();touch.clear();
-  if(!keepLinkedClock){statTime=performance.now();rendered=0;simulated=0;diagnostics.reset();}
+  if(!keepLinkedClock){statTime=performance.now();lastCompletedFrames=renderer.completedFrames();simulated=0;diagnostics.reset();renderer.resetInterpolation();}
   simulationClock.start({reset:!keepLinkedClock});
   ui.overlay.hidden=true;document.documentElement.classList.remove('launcher-open');
   gameSurface.inert=false;
@@ -652,7 +714,7 @@ async function main() {
     return;
   }
   try{
-    wasm=await factory({locateFile:(path)=>path+'?v=53.8.59'});
+    wasm=await factory({locateFile:(path)=>path+'?v=53.8.60'});
     for(const name of ['_daytona_set_single_skin','_daytona_set_player_skin','_daytona_prepare_visual','_daytona_visual_updates','_daytona_tiles_ptr','_daytona_tiles_versions_ptr','_daytona_tiles_metadata_ptr','_daytona_set_display','_daytona_vertices_ptr','_daytona_vertices_count','_daytona_batches_ptr','_daytona_batches_count','_daytona_background_ptr','_daytona_foreground_ptr','_daytona_tex0_ptr','_daytona_tex1_ptr','_daytona_texture_generation','_daytona_luma_ptr','_daytona_xlat_ptr','_daytona_rumble_strong','_daytona_rumble_weak','_daytona_rumble_centring','_daytona_set_draw_distance','_daytona_draw_distance','_daytona_set_reverse_expert','_daytona_set_reverse_course','_daytona_set_cpu_cars','_daytona_set_race_options','_daytona_link_enable','_daytona_link_receive_ptr','_daytona_link_receive','_daytona_link_tx_ptr','_daytona_link_tx_size','_daytona_link_tx_pop','_daytona_link_state','_daytona_link_id','_daytona_link_count','_daytona_callback_slots','_daytona_link_pending_bytes']) {
       if(typeof wasm[name]!=='function')throw Error('Incomplete engine build: missing '+name+'. Run scripts/build_web.ps1 again.');
     }
