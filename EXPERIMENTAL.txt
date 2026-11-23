@@ -1,4 +1,4 @@
-DAYTONA USA WEB — v53.8.60
+DAYTONA USA WEB — v53.8.61
 
 3D refresh interpolation is off by default. The Expert bridge can still show a discontinuity.
 Experimental capabilities include configurable racing-wheel input and device/browser-specific force feedback.

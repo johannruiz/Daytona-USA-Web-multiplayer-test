@@ -85,8 +85,13 @@ const PAT_ROW = /^\s*([\da-f]{1,8})\s+([\da-f]{1,8})\s+(\d{1,2})\s+([\w.-]+\.png
 
 export async function loadTexturePack(file) {
   const directory = await zipDirectory(file);
-  const pat = ['scripts/daytona.pat', 'daytona.pat'].find(name => directory.entries.has(name));
-  if (!pat) throw Error('The ZIP needs a daytona.pat texture list.');
+  let pat = ['scripts/daytona.pat', 'daytona.pat'].find(name => directory.entries.has(name));
+  if (!pat) {
+    const manifests = [...directory.entries.keys()].filter(name => name.endsWith('/daytona.pat'));
+    if (!manifests.length) throw Error('The ZIP needs a daytona.pat texture list.');
+    if (manifests.length > 1) throw Error('The ZIP contains more than one Daytona texture pack. Choose a ZIP with one daytona.pat.');
+    [pat] = manifests;
+  }
   const folder = pat.slice(0, -'daytona.pat'.length);
   const manifest = utf8.decode(await zipEntry(file, directory, pat, 256 * 1024));
   const tags = new Map();

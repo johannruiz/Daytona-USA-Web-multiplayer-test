@@ -1,16 +1,16 @@
-import {mountRoomName} from './room-name-ui.js?v=53.8.60';
-import {mountHostTransfer} from './host-transfer-ui.js?v=53.8.60';
-import {mountRoomInvitation} from './room-invitation.js?v=53.8.60';
-import {mountWaitingToast} from './waiting-room.js?v=53.8.60';
-import {PublicRoomDirectory} from './public-rooms.js?v=53.8.60';
-import {createFirebaseDirectoryBackend} from './firebase-client.js?v=53.8.60';
-import {mountPublicRoomBrowser} from './public-rooms-ui.js?v=53.8.60';
-import {carColor} from './car-colors.js?v=53.8.60';
-import {parseInvitation,invitation} from './room-settings.js?v=53.8.60';
-import {createLobbyNotifications} from './lobby-notifications.js?v=53.8.60';
-import {mountPlayerSkins} from './player-skins-ui.js?v=53.8.60';
-import {PLAYER_SKINS} from './player-skins.js?v=53.8.60';
-import {createChatFollow} from './chat-follow.js?v=53.8.60';
+import {mountRoomName} from './room-name-ui.js?v=53.8.61';
+import {mountHostTransfer} from './host-transfer-ui.js?v=53.8.61';
+import {mountRoomInvitation} from './room-invitation.js?v=53.8.61';
+import {mountWaitingToast} from './waiting-room.js?v=53.8.61';
+import {PublicRoomDirectory} from './public-rooms.js?v=53.8.61';
+import {createFirebaseDirectoryBackend} from './firebase-client.js?v=53.8.61';
+import {mountPublicRoomBrowser} from './public-rooms-ui.js?v=53.8.61';
+import {carColor} from './car-colors.js?v=53.8.61';
+import {parseInvitation,invitation} from './room-settings.js?v=53.8.61';
+import {createLobbyNotifications} from './lobby-notifications.js?v=53.8.61';
+import {mountPlayerSkins} from './player-skins-ui.js?v=53.8.61';
+import {PLAYER_SKINS} from './player-skins.js?v=53.8.61';
+import {createChatFollow} from './chat-follow.js?v=53.8.61';
 const $=id=>document.getElementById(id);
 export function invitationFromURL(href){return new URLSearchParams(new URL(href).hash.slice(1)).get('room')||'';}
 export function createRoomUI(room,{single,unlockAudio,previews,canResume=()=>false,enableArrivalNotifications=()=>{},notifyRequest=()=>{},notifyChat=()=>{},notifyReady=()=>{},notifyConfirmed=()=>{}}){

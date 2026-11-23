@@ -1,12 +1,16 @@
 # Daytona USA Web
 
-**Version in this release folder: v53.8.60 (November 22, 2026)**
+**Version in this release folder: v53.8.61 (November 22, 2026)**
 
 A community browser port of the original Daytona USA arcade game, based on [daytona-arcade-recomp](https://github.com/alphanu1/daytona-arcade-recomp). This release contains the browser frontend and a compiled WebAssembly engine. **Bring your own supported Daytona USA ROM ZIP**: no ROM or extracted proprietary game content is included.
 
 This is an independent project, not affiliated with or endorsed by SEGA.
 
-## Release 53.8.60
+## Release 53.8.61
+
+- Texture packs can place `daytona.pat` in a nested folder. The loader finds the manifest and reads replacement PNGs alongside it.
+
+## Previous release 53.8.60
 
 - Import Model 2 Emulator texture packs in **Settings → Graphics**. The pack stays in the browser, and both WebGPU and WebGL2 support replacement textures, including the water in Advanced.
 - Try **3D refresh interpolation** to smooth demos and races at the display refresh rate. This experimental option is off by default. The Expert bridge can still show a discontinuity.
