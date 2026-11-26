@@ -1,6 +1,6 @@
 // Detection/reset improvements adapted from gareth10203, PR #2.
 import {WHEEL_ACTIONS,newWheelProfile,loadWheelProfiles,saveWheelProfiles,sanitizeBinding,bindingDevice,rawInput,
-  steeringCalibrated,pedalCalibrated,wheelSteering,wheelPedal,readWheel,snapshotDevices,detectBinding,bindingPressed} from './wheel.js?v=53.8.61';
+  steeringCalibrated,pedalCalibrated,wheelSteering,wheelPedal,readWheel,snapshotDevices,detectBinding,bindingPressed} from './wheel.js?v=53.8.62';
 
 export function createWheelControls(root,{storage,getPads,onChange=()=>{},onDevice=()=>{},onReset=()=>{},deviceActions=[],hardware=null}) {
   const saved=loadWheelProfiles(storage),rows=new Map();
@@ -144,7 +144,7 @@ export function createWheelControls(root,{storage,getPads,onChange=()=>{},onDevi
   reset.addEventListener('click',()=>{
     const config=profile();if(!config)return;
     cancelAssignment();setDeviceDetection('','');saved.profiles.splice(saved.profiles.indexOf(config),1);saved.selectedId='';
-    persist();render();onReset();announce('Wheel profile, device selection and force feedback cleared.');
+    persist();render();onReset();announce('Wheel profile and device selection cleared.');
   });
   function addOption(select,text,value){const option=create('option',text);option.value=value;select.append(option);}
   function renderOptions(){

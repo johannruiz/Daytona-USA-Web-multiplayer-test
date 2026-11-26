@@ -1,12 +1,18 @@
 # Daytona USA Web
 
-**Version in this release folder: v53.8.61 (November 22, 2026)**
+**Version in this release folder: v53.8.62 (November 26, 2026)**
 
 A community browser port of the original Daytona USA arcade game, based on [daytona-arcade-recomp](https://github.com/alphanu1/daytona-arcade-recomp). This release contains the browser frontend and a compiled WebAssembly engine. **Bring your own supported Daytona USA ROM ZIP**: no ROM or extracted proprietary game content is included.
 
 This is an independent project, not affiliated with or endorsed by SEGA.
 
-## Release 53.8.61
+## Release 53.8.62
+
+- Wheel force feedback now goes through [Arcade FFB Helper](https://github.com/johannruiz/arcade-ffb-helper), the small SDL3 app for Windows and macOS shared with Daytona USA 2 and Scud Race. It works with most commercial wheels that have a DirectInput or SDL3 force feedback driver. Turn it on in **Settings → Experimental → Force feedback**; strength, direction and the other force settings are in the helper.
+- The page exposes `window.arcadeForceFeedback` v1 (`game: 'd1'`) with the drive board's own forces: the constant force and the uncentring as signed torque, the centring spring and the resistance as damper. The board has no friction or vibration, so they stay 0. Forces stop in menus, pause, spectating and when the page is hidden or loses focus. With Arcade FFB Helper 0.2 or later, the centring spring also keeps the board's shape: a small dead zone (2%, or 6% for the 0x38–0x3F commands), then the spring rises to its strength. Older helpers play it as a linear spring.
+- The WebHID force feedback drivers (HID PID, T300, Logitech G29) and the HID report were retired. Gamepad vibration is unchanged.
+
+## Previous release 53.8.61
 
 - Texture packs can place `daytona.pat` in a nested folder. The loader finds the manifest and reads replacement PNGs alongside it.
 
@@ -63,7 +69,7 @@ This release folder already contains `index.html`, the engine JavaScript and `da
 - **Multiplayer:** public and private rooms, two to eight drivers, invitations, room chat, waiting seats, room/race settings, editable room names and host transfer. Rooms reject incompatible client versions.
 - **Spectators:** integrated spectator roles, original-engine replay, camera controls and driver-follow options; viewer and relay limitations remain documented in the [historical notes](docs/README_RELEASE_HISTORY.md).
 - **Controls:** keyboard, gamepad and touch; graphics, sound, vibration and steering settings.
-- **Experimental racing wheels:** configurable steering, pedals and buttons, plus device/browser-dependent force-feedback and WebHID support. No universal wheel compatibility is claimed.
+- **Experimental racing wheels:** configurable steering, pedals and buttons, plus force feedback through Arcade FFB Helper (SDL3). Not every wheel and driver has been validated.
 - **Rendering:** graphics options with WebGPU and WebGL2 support; actual performance varies by device and browser.
 
 Online play depends on WebRTC connectivity, compatible browser behavior and external room/signaling services. Not every network or physical device combination has been validated.
@@ -72,6 +78,7 @@ Online play depends on WebRTC connectivity, compatible browser behavior and exte
 
 | Version | Changes |
 | --- | --- |
+| **53.8.62** | Wheel force feedback through Arcade FFB Helper; WebHID force feedback retired. |
 | **53.8.59** | Support/donation link placed after the menu content in normal scroll flow. |
 | **53.8.47** | Strict room-version checks and editable room names. |
 | **53.8.45** | Logitech G29 feedback fix and responsive mobile chat improvements. |

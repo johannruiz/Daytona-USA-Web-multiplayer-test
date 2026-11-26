@@ -17,7 +17,9 @@ helpers and wheel-detection improvements were contributed by **gareth10203**:
 
 These contributions were adapted into the current runtime with explicit device
 pairing, gameplay safety gates, serialized/cancellable tests and a revised UI.
-The original project and third-party license notices remain in LICENSE,
+In 53.8.62 the WebHID providers and HID diagnostics were retired in favour of
+Arcade FFB Helper; the direct drive-board force helpers remain in the engine
+bridge. The original project and third-party license notices remain in LICENSE,
 NOTICE.md and THIRD_PARTY.md.
 
 ## G29 compatibility reference (53.8.42)

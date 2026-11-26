@@ -1,42 +1,41 @@
-import {ArcadeSelection} from './arcade-selection.js?v=53.8.61';
-import {mountWheelFeedback} from './wheel-feedback-ui.js?v=53.8.61';
-import {wheelMayDrive} from './wheel-force-feedback.js?v=53.8.61';
-import {createEnvironment} from './environment.js?v=53.8.61';
-import {SpectatorService,spectatorConfig} from './spectator-service.js?v=53.8.61';
-import {mountSpectatorControls} from './spectator-controls.js?v=53.8.61';
-import {createRoomArrivals} from './room-arrivals.js?v=53.8.61';
-import {createSkinPreviews} from './skin-previews.js?v=53.8.61';
-import {createRoomSystemAlerts} from './room-system-alerts.js?v=53.8.61';
-import {createROMStore,createROMMemory} from './rom-memory.js?v=53.8.61';
-import {mountGameChat} from './game-chat.js?v=53.8.61';
-import {startAnalytics} from './firebase-client.js?v=53.8.61';
-import {LocalRaceReporter,applyNativeOrder} from './race-authority.js?v=53.8.61';
-import {mountRaceStandings} from './race-standings.js?v=53.8.61';
-import {createGamepadHome} from './gamepad-home.js?v=53.8.61';
-import {protectTouchSurface} from './touch-guard.js?v=53.8.61';
-import {createKeyboardControls} from './keyboard-controls.js?v=53.8.61';
-import {SimulationClock} from './simulation-clock.js?v=53.8.61';
-import {SourceTimeline,NativeStateInbox} from './link-timing.js?v=53.8.61';
-import {linkIdForSeat} from './central-link.js?v=53.8.61';
-import {createLobbySound} from './lobby-sound.js?v=53.8.61';
-import { mountDiagnostics } from './diagnostics.js?v=53.8.61';
-import { mountRoomDiagnostics } from './room-diagnostics.js?v=53.8.61';
-import {createControllerControls} from './controller-controls.js?v=53.8.61';
-import { createRenderer } from './renderer.js?v=53.8.61';
-import { loadTexturePack } from './texture-pack.js?v=53.8.61';
-import {mountGraphicsAPISettings} from './graphics-api-settings.js?v=53.8.61';
-import {mountMenuGamepad} from './menu-gamepad.js?v=53.8.61';
-import { restoreNVRAM, STORAGE_ID,usableCabinetEEPROM } from './nvram.js?v=53.8.61';
-import { createTouchControls } from './touch.js?v=53.8.61';
-import { createGamepadRumble } from './haptics.js?v=53.8.61';
-import { loadSettings, saveSettings } from './preferences.js?v=53.8.61';
-import { createWheelControls } from './wheel-controls.js?v=53.8.61';
-import { Multiplayer } from './multiplayer.js?v=53.8.61';
-import { createRoomUI } from './room-ui.js?v=53.8.61';
-import { mountHostConsole } from './host-console.js?v=53.8.61';
-import { raceOptionsMask,prepareCabinet,ensureDeluxeCabinet } from './room-settings.js?v=53.8.61';
-import {prepareSingleCabinet,sameSingleSettings} from './single-player-settings.js?v=53.8.61';
-import {createSinglePlayerUI} from './single-player-ui.js?v=53.8.61';
+import {ArcadeSelection} from './arcade-selection.js?v=53.8.62';
+import {mountFfbHelper} from './ffb-helper-ui.js?v=53.8.62';
+import {createEnvironment} from './environment.js?v=53.8.62';
+import {SpectatorService,spectatorConfig} from './spectator-service.js?v=53.8.62';
+import {mountSpectatorControls} from './spectator-controls.js?v=53.8.62';
+import {createRoomArrivals} from './room-arrivals.js?v=53.8.62';
+import {createSkinPreviews} from './skin-previews.js?v=53.8.62';
+import {createRoomSystemAlerts} from './room-system-alerts.js?v=53.8.62';
+import {createROMStore,createROMMemory} from './rom-memory.js?v=53.8.62';
+import {mountGameChat} from './game-chat.js?v=53.8.62';
+import {startAnalytics} from './firebase-client.js?v=53.8.62';
+import {LocalRaceReporter,applyNativeOrder} from './race-authority.js?v=53.8.62';
+import {mountRaceStandings} from './race-standings.js?v=53.8.62';
+import {createGamepadHome} from './gamepad-home.js?v=53.8.62';
+import {protectTouchSurface} from './touch-guard.js?v=53.8.62';
+import {createKeyboardControls} from './keyboard-controls.js?v=53.8.62';
+import {SimulationClock} from './simulation-clock.js?v=53.8.62';
+import {SourceTimeline,NativeStateInbox} from './link-timing.js?v=53.8.62';
+import {linkIdForSeat} from './central-link.js?v=53.8.62';
+import {createLobbySound} from './lobby-sound.js?v=53.8.62';
+import { mountDiagnostics } from './diagnostics.js?v=53.8.62';
+import { mountRoomDiagnostics } from './room-diagnostics.js?v=53.8.62';
+import {createControllerControls} from './controller-controls.js?v=53.8.62';
+import { createRenderer } from './renderer.js?v=53.8.62';
+import { loadTexturePack } from './texture-pack.js?v=53.8.62';
+import {mountGraphicsAPISettings} from './graphics-api-settings.js?v=53.8.62';
+import {mountMenuGamepad} from './menu-gamepad.js?v=53.8.62';
+import { restoreNVRAM, STORAGE_ID,usableCabinetEEPROM } from './nvram.js?v=53.8.62';
+import { createTouchControls } from './touch.js?v=53.8.62';
+import { createGamepadRumble } from './haptics.js?v=53.8.62';
+import { loadSettings, saveSettings } from './preferences.js?v=53.8.62';
+import { createWheelControls } from './wheel-controls.js?v=53.8.62';
+import { Multiplayer } from './multiplayer.js?v=53.8.62';
+import { createRoomUI } from './room-ui.js?v=53.8.62';
+import { mountHostConsole } from './host-console.js?v=53.8.62';
+import { raceOptionsMask,prepareCabinet,ensureDeluxeCabinet } from './room-settings.js?v=53.8.62';
+import {prepareSingleCabinet,sameSingleSettings} from './single-player-settings.js?v=53.8.62';
+import {createSinglePlayerUI} from './single-player-ui.js?v=53.8.62';
 // Daytona USA browser host. The wasm module is the original recomp game's
 // native game loop, not a JavaScript reconstruction of Daytona.
 const $ = (id) => document.getElementById(id);
@@ -97,7 +96,7 @@ let interpolationScene=null;
 const FIXED_MS = 1000 / (16000000 / (656 * 424));
 const held = new Set();
 let currentGear = 1;
-let wheelInUse=false,wheelFeedback=null;
+let wheelInUse=false;
 
 let audioLoaded = false;
 const settingsStorage={getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value)};
@@ -178,9 +177,34 @@ function reloadEngine(){
 }
 const rumble=createGamepadRumble(status=>{$('rumbleStatus').textContent=status;});
 function connectedDevices(){try{return [...(navigator.getGamepads?.() ?? [])].filter(pad=>pad?.connected);}catch{return [];}}
-const wheelControls=createWheelControls($('wheelControls'),{storage:settingsStorage,getPads:connectedDevices,onChange:()=>stopFeedback(),onReset:()=>wheelFeedback?.resetPairing()});
-wheelFeedback=mountWheelFeedback($('wheelFeedback'),{settings,onSetting:changeSetting,storage:settingsStorage,getSelection:()=>wheelControls.selection(),getEngineAvailable:()=>!!wasm?._daytona_wheel_force&&!!wasm?._daytona_wheel_resistance,canTest:()=>settingsOpen&&!$('experimentalPanel').hidden&&!ui.overlay.hidden&&document.hasFocus()&&!document.hidden});
-function stopFeedback(){rumble.stop();wheelFeedback?.stop({force:true});}
+const wheelControls=createWheelControls($('wheelControls'),{storage:settingsStorage,getPads:connectedDevices,onChange:()=>stopFeedback()});
+// Wheel force feedback (v53.8.62) through Arcade FFB Helper, shared with Daytona USA 2 and
+// Scud Race: window.arcadeForceFeedback v1 hands the helper the drive board's own forces from
+// _daytona_wheel_ffb (native/daytona_web.cpp): constant -1..1 (+ = right; 0x5-/0x6- and the
+// uncentring 0x4- at the delivered steering position), centring spring 0x3- and resistance 0x2-
+// as damper, 0..1. Friction and vibration are 0: this board has neither. With Arcade FFB Helper 0.2 the spring
+// also carries the board's shape (springDeadZone, springSlope). They are live only
+// while this cabinet drives (not spectating), with no menu, and the page visible and focused;
+// otherwise every force is 0 and the helper releases the wheel. The gamepad keeps its own rumble.
+function wheelForcesLive(){
+  return !!(wasm?._daytona_wheel_ffb&&running&&started&&ui.overlay.hidden&&document.hasFocus()&&!document.hidden&&!room.waiters.get(room.id)?.spectator);
+}
+const NO_WHEEL_FORCES=Object.freeze({constant:0,spring:0,damper:0,friction:0,rumble:0,live:false});
+window.arcadeForceFeedback=Object.freeze({
+  version:1,game:'d1',
+  read(){
+    if(!wheelForcesLive())return NO_WHEEL_FORCES;
+    const f=new Float32Array(wasm.HEAPU8.buffer,wasm._daytona_wheel_ffb(),8);
+    if(f[0]!==1||f[7]!==1)return NO_WHEEL_FORCES;
+    const forces={constant:f[1],spring:f[2],damper:f[3],friction:f[4],rumble:f[5],live:true};
+    // The board's spring is not linear (helper 0.2 plays its shape; older helpers ignore it): no force
+    // in a dead zone of 2% of the travel (6% for 0x38-0x3F, effect 3), then its level within 8% more.
+    if(f[2]>0){forces.springDeadZone=f[6]===3?.06:.02;forces.springSlope=1/.08;}
+    return forces;
+  },
+});
+mountFfbHelper($('ffbHelper'),{card:$('wheelFeedback'),pill:$('wheelForceStatus')});
+function stopFeedback(){rumble.stop();}
 const controllerControls=createControllerControls($('controllerControls'),{storage:settingsStorage,reservedIds:()=>wheelControls.reservedIds(),wheelPad:()=>wheelControls.feedbackPad(),onChange:()=>stopFeedback()});
 const keyboardControls=createKeyboardControls($('keyboardControls'),{held,storage:settingsStorage,settings,mobile:mobileDevice,onSetting:changeSetting});
 if(mobileDevice){$('inputTabLabel').textContent='Touch controls';$('inputTab').querySelector('svg').innerHTML='<path d="M8 12V5a2 2 0 0 1 4 0v6-3a2 2 0 0 1 4 0v3-1a2 2 0 0 1 4 0v5c0 4-3 7-7 7h-1c-2 0-3-1-4-2l-4-5a2 2 0 0 1 3-3l1 1Z"/>'; }
@@ -191,7 +215,6 @@ function applyGraphics(){
   $('graphicsSummary').textContent=enhanced?`Enhanced · Draw distance ${settings.drawDistance}x`:'Classic · Original draw distance';
 }
 function syncSettings(){
-  wheelFeedback?.sync();
   rumble.setIntensity(settings.vibrationEnabled?settings.rumble:0);
   rumble.setCentringIntensity(settings.centring);
   for(const id of ['vibrationEnabled','settingsVibrationEnabled'])$(id).checked=settings.vibrationEnabled;
@@ -409,7 +432,7 @@ ui.overlay.addEventListener('keydown',event=>{
  if(!items.includes(active)||(event.shiftKey&&active===first)||(!event.shiftKey&&active===last)){event.preventDefault();(event.shiftKey?last:first).focus();}
 });
 window.addEventListener('blur',()=>{held.clear();keyboardControls.reset();stopFeedback();controllerControls.cancel();controllerControls.resetEdges();});
-window.addEventListener('gamepaddisconnected',()=>{rumble.disconnect();wheelFeedback.refresh();});
+window.addEventListener('gamepaddisconnected',()=>rumble.disconnect());
 
 function pushAudio() {
   if(soundMuted || !ctxAudio || ctxAudio.state!=='running' || !audioLoaded)return;
@@ -432,7 +455,6 @@ function updateDevices(now){
   keyboardControls.update(now,settingsOpen&&!$('inputPanel').hidden);
   const devices=connectedDevices();
   wheelControls.update(devices,now,settingsOpen && !$('experimentalPanel').hidden);
-  wheelFeedback.refresh();
   controllerControls.update(devices,now,settingsOpen && !$('controllerPanel').hidden,settings.joystickSensitivity,settings.joystickDeadzone);
 }
 const arcadeSelection=new ArcadeSelection();
@@ -472,9 +494,7 @@ function simulateStep(now){
     if(state===3){room.end('The original arcade reported a lost link. Return to the room and restart.',room.id,'arcade-link-error');return false;}
     if(now-linkStartedAt>45000&&state!==2){room.end('The cabinets could not establish their original arcade link.',room.id,'arcade-start-timeout');return false;}
   }
-  const direct=wheelFeedback.drive({force:wasm._daytona_wheel_force?.()||0,resistance:wasm._daytona_wheel_resistance?.()||0},now,wheelMayDrive({running,started,menuOpen:!ui.overlay.hidden,focused:document.hasFocus(),hidden:document.hidden,wheelActive:wheelInUse,spectating:!!room.waiters.get(room.id)?.spectator}));
-  if(direct)rumble.stop();
-  else if(document.hasFocus() && !document.hidden && ui.overlay.hidden)
+  if(document.hasFocus() && !document.hidden && ui.overlay.hidden)
     rumble.update(feedbackGamepad(),wasm._daytona_rumble_strong(),wasm._daytona_rumble_weak(),now,wasm._daytona_rumble_centring());
   else rumble.stop();
   pushAudio();
@@ -506,7 +526,7 @@ const environment=createEnvironment({engine:()=>wasm,renderer:()=>renderer,conte
 function frame(now) {
   requestAnimationFrame(frame);
   gamepadHome.update();menuControls?.update(now);raceStandings.update(now);gameChat?.update();
-  if(!running||!wasm){environment.pause();updateDevices(now);diagnostics.update(false);wheelFeedback.stop({force:false});rumble.update(feedbackGamepad(),0,0,now);return;}
+  if(!running||!wasm){environment.pause();updateDevices(now);diagnostics.update(false);rumble.update(feedbackGamepad(),0,0,now);return;}
   // Consume due steps immediately before presenting. The same clock has a
   // timer fallback for missing refreshes, without a second simulation loop.
   const phase=simulationClock.present(now);
@@ -714,7 +734,7 @@ async function main() {
     return;
   }
   try{
-    wasm=await factory({locateFile:(path)=>path+'?v=53.8.61'});
+    wasm=await factory({locateFile:(path)=>path+'?v=53.8.62'});
     for(const name of ['_daytona_set_single_skin','_daytona_set_player_skin','_daytona_prepare_visual','_daytona_visual_updates','_daytona_tiles_ptr','_daytona_tiles_versions_ptr','_daytona_tiles_metadata_ptr','_daytona_set_display','_daytona_vertices_ptr','_daytona_vertices_count','_daytona_batches_ptr','_daytona_batches_count','_daytona_background_ptr','_daytona_foreground_ptr','_daytona_tex0_ptr','_daytona_tex1_ptr','_daytona_texture_generation','_daytona_luma_ptr','_daytona_xlat_ptr','_daytona_rumble_strong','_daytona_rumble_weak','_daytona_rumble_centring','_daytona_set_draw_distance','_daytona_draw_distance','_daytona_set_reverse_expert','_daytona_set_reverse_course','_daytona_set_cpu_cars','_daytona_set_race_options','_daytona_link_enable','_daytona_link_receive_ptr','_daytona_link_receive','_daytona_link_tx_ptr','_daytona_link_tx_size','_daytona_link_tx_pop','_daytona_link_state','_daytona_link_id','_daytona_link_count','_daytona_callback_slots','_daytona_link_pending_bytes']) {
       if(typeof wasm[name]!=='function')throw Error('Incomplete engine build: missing '+name+'. Run scripts/build_web.ps1 again.');
     }

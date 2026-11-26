@@ -1,4 +1,4 @@
-DAYTONA USA WEB — v53.8.61 (22/11/2026)
+DAYTONA USA WEB — v53.8.62 (26/11/2026)
 
 Esta carpeta contiene la versión estática lista para servir.
 Desde esta carpeta, ejecuta: node serve.js . 8080
