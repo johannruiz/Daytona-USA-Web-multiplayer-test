@@ -1,9 +1,0 @@
-DAYTONA USA WEB — v53.8.62 (26/11/2026)
-
-Esta carpeta contiene la versión estática lista para servir.
-Desde esta carpeta, ejecuta: node serve.js . 8080
-Abre: http://localhost:8080/
-
-Cada jugador debe proporcionar su propio ZIP ROM compatible y usar la misma versión.
-Funciones, controles y notas actuales: README.md.
-Notas históricas: docs/README_RELEASE_HISTORY.md.

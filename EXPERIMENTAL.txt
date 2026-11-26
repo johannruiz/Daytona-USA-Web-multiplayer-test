@@ -1,6 +1,0 @@
-DAYTONA USA WEB — v53.8.62
-
-3D refresh interpolation is off by default. The Expert bridge can still show a discontinuity.
-Experimental capabilities include configurable racing-wheel input and force feedback through Arcade FFB Helper (SDL3).
-Multiplayer and spectator performance varies with hardware and connectivity.
-See README.md for the current feature overview and docs/README_RELEASE_HISTORY.md for older previews.
